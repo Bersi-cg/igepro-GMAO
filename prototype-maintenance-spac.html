@@ -1,0 +1,3303 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GMAO - IGEPRO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+  :root{
+    --ink:#1B2420;
+    --paper:#EFEAE0;
+    --panel:#FAF8F3;
+    --panel-line:#DDD5C4;
+    --rust:#B7502E;
+    --rust-dark:#8f3e22;
+    --rust-soft:#f7e6dd;
+    --verdigris:#3E6E5C;
+    --verdigris-dark:#2c5142;
+    --verdigris-soft:#e3ece6;
+    --amber:#C6862A;
+    --amber-soft:#f3e6c9;
+    --slate:#6B655A;
+    --slate-light:#95907F;
+    --white:#fff;
+    --radius:3px;
+    --shadow: 0 1px 0 rgba(27,36,32,.06), 0 6px 16px rgba(27,36,32,.06);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:14.5px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{
+    font-family:'Archivo Expanded', sans-serif;
+    letter-spacing:.01em;
+    margin:0;
+  }
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  a{color:inherit;}
+  button{font-family:inherit;cursor:pointer;}
+
+  /* ===== App shell ===== */
+  .app{display:flex; min-height:100vh;}
+
+  /* ----- Rail ----- */
+  .rail{
+    width:240px; flex:none;
+    background:var(--ink);
+    color:var(--paper);
+    display:flex; flex-direction:column;
+    padding:22px 16px;
+    position:sticky; top:0; height:100vh; overflow-y:auto;
+  }
+  .rail-brand{display:flex; align-items:center; gap:10px; margin-bottom:24px; padding:0 4px;}
+  .rail-brand .mark{
+    width:30px; height:30px; border-radius:6px; background:var(--rust);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Archivo Expanded',sans-serif; font-weight:800; font-size:13px;
+    color:#fff; flex:none; transform:rotate(-3deg);
+  }
+  .rail-brand .name{font-family:'Archivo Expanded',sans-serif; font-weight:700; font-size:15px; letter-spacing:.02em;}
+  .rail-brand .sub{font-size:10.5px; color:#8f978f; font-family:'IBM Plex Mono',monospace; letter-spacing:.04em;}
+
+  .user-card{
+    background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.08); border-radius:12px;
+    padding:11px; margin-bottom:20px;
+  }
+  .uc-top{display:flex; align-items:center; gap:10px;}
+  .uc-avatar{
+    width:34px; height:34px; border-radius:9px; flex:none;
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-family:'Archivo Expanded',sans-serif; font-weight:800; font-size:12px;
+  }
+  .uc-info{flex:1; min-width:0;}
+  .uc-name{font-size:13px; font-weight:600; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .uc-role-tag{
+    display:inline-block; margin-top:3px; font-family:'IBM Plex Mono',monospace; font-size:9px; font-weight:600;
+    text-transform:uppercase; letter-spacing:.04em; color:#c8cdc6; background:rgba(255,255,255,.08);
+    padding:2px 6px; border-radius:20px;
+  }
+  .uc-logout-icon{
+    flex:none; width:28px; height:28px; border-radius:8px; background:transparent; border:1px solid rgba(255,255,255,.12);
+    color:#aeb3ac; display:flex; align-items:center; justify-content:center; font-size:13px; line-height:1; padding:0;
+  }
+  .uc-logout-icon:hover{background:rgba(183,80,46,.18); border-color:var(--rust); color:#fff;}
+  .uc-client-chip{
+    display:flex; align-items:center; gap:7px; background:rgba(255,255,255,.05);
+    border-radius:8px; padding:6px 7px; margin-top:10px;
+  }
+  .uc-client-mark{
+    width:20px; height:20px; border-radius:5px; flex:none;
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-family:'Archivo Expanded',sans-serif; font-weight:800; font-size:8.5px;
+  }
+  .uc-client-name{font-size:11.5px; font-weight:600; color:#e2e5e0; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .uc-client-switch{
+    flex:none; background:none; border:none; color:#9aa39a; font-size:13px; line-height:1;
+    padding:3px 5px; border-radius:5px; cursor:pointer;
+  }
+  .uc-client-switch:hover{color:#fff; background:rgba(255,255,255,.1);}
+
+  /* ---- login screen ---- */
+  .login-screen{
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    background:var(--ink); padding:20px;
+    background-image: radial-gradient(circle at 15% 20%, rgba(62,110,92,.35), transparent 45%), radial-gradient(circle at 85% 80%, rgba(183,80,46,.28), transparent 45%);
+  }
+  .login-card{
+    width:100%; max-width:380px; background:var(--panel); border-radius:12px; padding:30px 28px 26px;
+    box-shadow:0 20px 60px rgba(0,0,0,.35);
+  }
+  .login-brand{display:flex; align-items:center; gap:10px; margin-bottom:22px;}
+  .login-brand .mark{
+    width:32px; height:32px; border-radius:7px; background:var(--rust); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-family:'Archivo Expanded',sans-serif; font-weight:800; font-size:13px;
+    transform:rotate(-3deg); flex:none;
+  }
+  .login-brand .name{font-family:'Archivo Expanded',sans-serif; font-weight:700; font-size:15px;}
+  .login-brand .sub{font-size:10.5px; color:var(--slate); font-family:'IBM Plex Mono',monospace; letter-spacing:.04em;}
+  .login-card h2{font-size:19px; margin-bottom:4px;}
+  .login-hint{font-size:12px; color:var(--slate); margin:0 0 18px;}
+  .login-label{display:block; font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--slate); margin:12px 0 5px;}
+  #loginForm input{width:100%; padding:10px 11px; font-size:13px;}
+  .login-error{color:var(--rust-dark); font-size:12px; margin-top:10px; min-height:1px;}
+  .login-demo{margin-top:22px; padding-top:18px; border-top:1px dashed var(--panel-line);}
+  .login-demo-title{font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--slate); margin-bottom:8px;}
+  .demo-chip{
+    display:block; width:100%; text-align:left; background:#fff; border:1px solid var(--panel-line); border-radius:7px;
+    padding:9px 11px; font-size:12px; margin-bottom:7px; color:var(--ink);
+  }
+  .demo-chip:hover{border-color:var(--verdigris); background:var(--verdigris-soft);}
+
+  /* ---- client selection screen ---- */
+  .client-select-screen{min-height:100vh; background:var(--paper);}
+  .cs-topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 30px; background:var(--ink); color:#fff;
+  }
+  .cs-user{display:flex; align-items:center; gap:14px; font-size:12.5px; color:#d7dad4;}
+  .cs-body{padding:34px 30px 50px; max-width:980px; margin:0 auto;}
+  .cs-body h2{font-size:22px; margin-bottom:4px;}
+  .client-card{
+    background:var(--panel); border:1px solid var(--panel-line); border-radius:var(--radius);
+    padding:18px 18px 16px; box-shadow:var(--shadow); cursor:pointer; transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .client-card:hover{transform:translateY(-2px); box-shadow:0 10px 24px rgba(27,36,32,.1);}
+  .client-card .cc-top{display:flex; align-items:center; gap:12px; margin-bottom:12px;}
+  .client-card .cc-mark{
+    width:40px; height:40px; border-radius:8px; display:flex; align-items:center; justify-content:center;
+    color:#fff; font-family:'Archivo Expanded',sans-serif; font-weight:800; font-size:14px; flex:none;
+  }
+  .client-card .cc-name{font-family:'Archivo Expanded',sans-serif; font-weight:700; font-size:15.5px;}
+  .client-card .cc-sector{font-size:11px; color:var(--slate); font-family:'IBM Plex Mono',monospace;}
+  .client-card .cc-open{font-size:11.5px; font-weight:600; display:flex; align-items:center; gap:5px; margin-top:10px;}
+
+  .rail-nav{display:flex; flex-direction:column; gap:1px;}
+  .rail-nav .label{font-size:10px; text-transform:uppercase; letter-spacing:.09em; color:#767f76; margin:14px 10px 6px;}
+  .rail-nav button{
+    background:transparent; border:none; color:#d7dad4; text-align:left;
+    padding:9px 10px; border-radius:6px; font-size:13px;
+    display:flex; align-items:center; justify-content:space-between; width:100%;
+  }
+  .rail-nav button:hover{background:rgba(255,255,255,.06);}
+  .rail-nav button.active{background:var(--verdigris); color:#fff; font-weight:600;}
+  .rail-nav button .count{
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px;
+    background:rgba(255,255,255,.12); padding:1px 6px; border-radius:20px;
+  }
+  .rail-nav button.active .count{background:rgba(255,255,255,.22);}
+  .rail-nav button .count.warn{background:var(--rust);}
+
+  .rail-foot{
+    margin-top:18px; padding-top:14px; border-top:1px solid rgba(255,255,255,.09);
+    font-size:11px; color:#767f76; font-family:'IBM Plex Mono',monospace;
+  }
+
+  /* ----- Main ----- */
+  .main{flex:1; min-width:0; display:flex; flex-direction:column;}
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 30px; border-bottom:1px solid var(--panel-line); background:var(--panel);
+    position:sticky; top:0; z-index:5;
+  }
+  .crumb{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--slate); letter-spacing:.03em;}
+  .crumb b{color:var(--ink);}
+  .topbar h1{font-size:21px;}
+  .content{padding:26px 30px 60px; flex:1;}
+  .screen{display:none; animation:fade .25s ease;}
+  .screen.active{display:block;}
+  @keyframes fade{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;}}
+
+  /* ===== generic components ===== */
+  .grid{display:grid; gap:14px;}
+  .cards{grid-template-columns:repeat(auto-fill, minmax(230px,1fr));}
+  .kpis{grid-template-columns:repeat(auto-fit, minmax(170px,1fr)); margin-bottom:18px;}
+  .card{
+    background:var(--panel); border:1px solid var(--panel-line); border-radius:var(--radius);
+    padding:16px 16px 14px; box-shadow:var(--shadow); position:relative;
+  }
+  .kpi-card{padding:15px 16px;}
+  .kpi-card .l{font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--slate); margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;}
+  .kpi-card .n{font-family:'Archivo Expanded',sans-serif; font-size:26px; font-weight:700; line-height:1;}
+  .kpi-card .d{font-size:11px; color:var(--slate-light); margin-top:5px;}
+  .kpi-card .trend{font-family:'IBM Plex Mono',monospace; font-size:10.5px; padding:1px 6px; border-radius:20px;}
+  .trend.up{background:var(--verdigris-soft); color:var(--verdigris-dark);}
+  .trend.down{background:var(--rust-soft); color:var(--rust-dark);}
+  .kpi-card.rust{border-left:3px solid var(--rust);}
+  .kpi-card.amber{border-left:3px solid var(--amber);}
+  .kpi-card.verdigris{border-left:3px solid var(--verdigris);}
+  .kpi-card.ink{border-left:3px solid var(--ink);}
+
+  .card .site-name{font-family:'Archivo Expanded',sans-serif; font-weight:700; font-size:15px; margin-bottom:2px;}
+  .card .site-meta{font-size:11.5px; color:var(--slate); font-family:'IBM Plex Mono',monospace; margin-bottom:12px;}
+  .stat-row{display:flex; gap:16px; margin-top:10px; flex-wrap:wrap;}
+  .stat{display:flex; flex-direction:column;}
+  .stat .n{font-family:'Archivo Expanded',sans-serif; font-size:19px; font-weight:700;}
+  .stat .l{font-size:10.5px; color:var(--slate); text-transform:uppercase; letter-spacing:.04em;}
+  .stat.warn .n{color:var(--rust);}
+  .stat.ok .n{color:var(--verdigris);}
+  .stat.pend .n{color:var(--amber);}
+
+  .badge{
+    display:inline-flex; align-items:center; gap:5px;
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; font-weight:600;
+    padding:3px 8px; border-radius:20px; letter-spacing:.02em; white-space:nowrap;
+  }
+  .badge::before{content:''; width:6px; height:6px; border-radius:50%;}
+  .badge.ras{background:#e3ece6; color:var(--verdigris-dark);} .badge.ras::before{background:var(--verdigris);}
+  .badge.action{background:#f7e6dd; color:var(--rust-dark);} .badge.action::before{background:var(--rust);}
+  .badge.encours{background:#f3e6c9; color:#8a5f13;} .badge.encours::before{background:var(--amber);}
+  .badge.fait{background:#dfe8e0; color:var(--verdigris-dark);} .badge.fait::before{background:var(--verdigris);}
+  .badge.na{background:#eae7de; color:var(--slate);} .badge.na::before{background:var(--slate-light);}
+  .badge.brouillon{background:#eae7de; color:var(--slate);} .badge.brouillon::before{background:var(--slate-light);}
+  .badge.soumise{background:#f3e6c9; color:#8a5f13;} .badge.soumise::before{background:var(--amber);}
+  .badge.validee{background:#e3ece6; color:var(--verdigris-dark);} .badge.validee::before{background:var(--verdigris);}
+  .badge.bon{background:#e3ece6; color:var(--verdigris-dark);} .badge.bon::before{background:var(--verdigris);}
+  .badge.vigilance{background:#f3e6c9; color:#8a5f13;} .badge.vigilance::before{background:var(--amber);}
+  .badge.critique{background:#f7e6dd; color:var(--rust-dark);} .badge.critique::before{background:var(--rust);}
+  .badge.enretard{background:#f7e6dd; color:var(--rust-dark);} .badge.enretard::before{background:var(--rust);}
+  .badge.bientot{background:#f3e6c9; color:#8a5f13;} .badge.bientot::before{background:var(--amber);}
+  .badge.ok{background:#e3ece6; color:var(--verdigris-dark);} .badge.ok::before{background:var(--verdigris);}
+
+  .stamp{
+    font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:10px; letter-spacing:.08em;
+    border:1.5px solid var(--verdigris); color:var(--verdigris-dark);
+    padding:3px 9px; border-radius:3px; text-transform:uppercase; transform:rotate(-4deg); display:inline-block;
+  }
+
+  .btn{
+    border:1px solid var(--ink); background:var(--ink); color:#fff;
+    padding:9px 15px; border-radius:6px; font-size:12.5px; font-weight:600;
+    display:inline-flex; align-items:center; gap:6px;
+  }
+  .btn:hover{background:#000;}
+  .btn.ghost{background:transparent; color:var(--ink); border-color:var(--panel-line);}
+  .btn.ghost:hover{border-color:var(--ink);}
+  .btn.rust{background:var(--rust); border-color:var(--rust);}
+  .btn.rust:hover{background:var(--rust-dark);}
+  .btn.verdigris{background:var(--verdigris); border-color:var(--verdigris);}
+  .btn.verdigris:hover{background:var(--verdigris-dark);}
+  .btn.sm{padding:6px 11px; font-size:11.5px;}
+  .btn:disabled{opacity:.4; cursor:not-allowed;}
+
+  .panel{background:var(--panel); border:1px solid var(--panel-line); border-radius:var(--radius); box-shadow:var(--shadow);}
+  .panel-head{display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid var(--panel-line); gap:12px;}
+  .panel-head h3{font-size:14px; font-weight:600; font-family:'IBM Plex Sans',sans-serif;}
+  .panel-head .sub{font-size:11px; color:var(--slate-light); font-family:'IBM Plex Mono',monospace;}
+  .panel-body{padding:6px 0;}
+  .panel-body.pad{padding:16px 18px;}
+
+  table{width:100%; border-collapse:collapse;}
+  th{font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--slate); text-align:left; padding:10px 18px; border-bottom:1px solid var(--panel-line);}
+  td{padding:12px 18px; border-bottom:1px solid var(--panel-line); font-size:13px; vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  tr.clickable:hover{background:#f2efe6; cursor:pointer;}
+
+  .row2{display:grid; grid-template-columns:1.3fr 1fr; gap:16px; align-items:start;}
+  .row3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; align-items:start;}
+  @media (max-width:1050px){ .row2, .row3{grid-template-columns:1fr;} }
+
+  .chart-wrap{padding:16px 18px;}
+  .chart-box{position:relative; height:230px;}
+  .chart-box.sm{height:190px;}
+
+  .legend-list{display:flex; flex-wrap:wrap; gap:10px 16px; padding:0 18px 14px; font-size:11.5px;}
+  .legend-list span{display:inline-flex; align-items:center; gap:6px;}
+  .legend-list i{width:9px;height:9px;border-radius:2px; display:inline-block;}
+
+  /* activity feed */
+  .feed{padding:6px 18px 14px; display:flex; flex-direction:column;}
+  .feed-item{display:flex; gap:12px; padding:11px 0; border-bottom:1px dashed var(--panel-line);}
+  .feed-item:last-child{border-bottom:none;}
+  .feed-ico{
+    width:28px; height:28px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center;
+    font-size:12px; background:var(--panel-line);
+  }
+  .feed-ico.validation{background:var(--verdigris-soft); color:var(--verdigris-dark);}
+  .feed-ico.devis{background:var(--amber-soft); color:#8a5f13;}
+  .feed-ico.alerte{background:var(--rust-soft); color:var(--rust-dark);}
+  .feed-ico.soumission{background:#e6e2d5; color:var(--slate);}
+  .feed-text{font-size:12.5px;}
+  .feed-meta{font-size:10.5px; color:var(--slate-light); font-family:'IBM Plex Mono',monospace; margin-top:2px;}
+
+  /* alerts */
+  .alert-item{display:flex; gap:10px; padding:11px 18px; border-bottom:1px solid var(--panel-line); align-items:flex-start;}
+  .alert-item:last-child{border-bottom:none;}
+  .alert-dot{width:8px; height:8px; border-radius:50%; background:var(--rust); margin-top:5px; flex:none;}
+  .alert-txt{font-size:12.5px;}
+  .alert-meta{font-size:10.5px; color:var(--slate-light); font-family:'IBM Plex Mono',monospace;}
+
+  /* kanban devis */
+  .kanban{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
+  @media (max-width:900px){.kanban{grid-template-columns:1fr;}}
+  .kanban-col{background:var(--panel); border:1px solid var(--panel-line); border-radius:var(--radius); box-shadow:var(--shadow);}
+  .kanban-col-head{padding:12px 14px; border-bottom:1px solid var(--panel-line); display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; background:var(--panel); z-index:1; border-radius:var(--radius) var(--radius) 0 0;}
+  .kanban-body::-webkit-scrollbar{width:7px;}
+  .kanban-body::-webkit-scrollbar-track{background:transparent;}
+  .kanban-body::-webkit-scrollbar-thumb{background:var(--panel-line); border-radius:4px;}
+  .kanban-body::-webkit-scrollbar-thumb:hover{background:var(--slate-light);}
+  .kanban-col-head h4{font-family:'Archivo Expanded',sans-serif; font-size:12.5px; margin:0;}
+  .kanban-col-head .tot{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--slate);}
+  .kanban-body{padding:10px; display:flex; flex-direction:column; gap:8px; min-height:60px; max-height:520px; overflow-y:auto;}
+  .kanban-card{background:#fff; border:1px solid var(--panel-line); border-radius:7px; padding:10px 11px;}
+  .kanban-card .site{font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--slate-light); text-transform:uppercase; letter-spacing:.03em;}
+  .kanban-card .txt{font-size:12px; margin:3px 0 7px;}
+  .kanban-card .amt{font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:12.5px;}
+  .kanban-card .actions{display:flex; gap:6px; margin-top:8px;}
+  .kanban-empty{padding:16px; text-align:center; font-size:11.5px; color:var(--slate-light);}
+
+  /* item / category management */
+  .mgmt-cat-head{display:flex; align-items:center; gap:8px; margin-bottom:10px;}
+  .mgmt-cat-head .mgmt-cat-name{
+    flex:1; font-family:'Archivo Expanded',sans-serif; font-weight:700; font-size:13.5px;
+    border:1px solid transparent; background:transparent; padding:5px 6px; border-radius:5px;
+  }
+  .mgmt-cat-head .mgmt-cat-name:hover, .mgmt-cat-head .mgmt-cat-name:focus{border-color:var(--panel-line); background:#fff; outline:none;}
+  .mgmt-cat-head .freq-select{width:150px; font-family:'IBM Plex Mono',monospace; font-size:11px;}
+  .mgmt-item-row{display:flex; align-items:center; gap:8px; padding:5px 0;}
+  .mgmt-item-row input[type=text]{flex:1;}
+  .mgmt-add-row{display:flex; gap:8px; margin-top:8px;}
+  .mgmt-add-row input[type=text]{flex:1;}
+  .icon-btn{background:none; border:none; color:var(--slate-light); font-size:13px; padding:5px 7px; border-radius:5px; flex:none;}
+  .icon-btn:hover{color:var(--rust); background:var(--rust-soft);}
+
+  /* admin : onglets + listes clients/sites/utilisateurs */
+  .admin-tabs{display:flex; gap:6px; margin-bottom:16px;}
+  .admin-tabs button{
+    background:var(--panel); border:1px solid var(--panel-line); color:var(--slate);
+    padding:8px 14px; border-radius:7px; font-size:12.5px; font-weight:600;
+  }
+  .admin-tabs button.active{background:var(--ink); color:#fff; border-color:var(--ink);}
+  .client-row{display:flex; align-items:center; gap:12px; padding:13px 18px; border-bottom:1px solid var(--panel-line);}
+  .client-row:last-child{border-bottom:none;}
+  .client-row .cr-mark{width:32px; height:32px; border-radius:7px; display:flex; align-items:center; justify-content:center; color:#fff; font-family:'Archivo Expanded',sans-serif; font-weight:800; font-size:11.5px; flex:none;}
+  .client-row .cr-name{font-weight:600; font-size:13px;}
+  .client-row .cr-sector{font-size:11px; color:var(--slate-light); font-family:'IBM Plex Mono',monospace;}
+  .client-row .cr-actions{margin-left:auto; display:flex; gap:6px;}
+  .user-row{display:flex; align-items:center; gap:10px; padding:12px 18px; border-bottom:1px solid var(--panel-line); flex-wrap:wrap;}
+  .user-row:last-child{border-bottom:none;}
+  .user-row .ur-name{font-weight:600; font-size:13px; min-width:130px;}
+  .user-row.row-click:hover{background:#f2efe6;}
+  .wiz-choice{display:flex; gap:10px; align-items:flex-start; padding:11px 13px; border:1px solid var(--panel-line); border-radius:8px; cursor:pointer; background:#fff; font-size:13px;}
+  .wiz-choice:hover{border-color:var(--rust);}
+  .wiz-choice input{margin-top:3px; flex:none;}
+  .user-row .ur-email{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--slate); min-width:190px;}
+  .user-row select{font-size:11.5px;}
+  .user-row .ur-actions{margin-left:auto;}
+  .new-form-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  @media (max-width:600px){.new-form-grid{grid-template-columns:1fr;}}
+  .new-form-grid input, .new-form-grid select{width:100%;}
+
+  /* pagination */
+  .pager{display:flex; align-items:center; justify-content:center; gap:14px; padding:14px 18px; border-top:1px solid var(--panel-line);}
+  .pager-info{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--slate);}
+
+  /* planning */
+  .planning-row{display:flex; align-items:center; gap:14px; padding:12px 18px; border-bottom:1px solid var(--panel-line);}
+  .planning-row:last-child{border-bottom:none;}
+  .planning-bar-wrap{flex:1; height:8px; background:var(--panel-line); border-radius:5px; overflow:hidden; position:relative;}
+  .planning-bar{height:100%; border-radius:5px;}
+
+  /* ---- carnet / checklist ---- */
+  .carnet{background:var(--panel); border:1px solid var(--panel-line); border-radius:var(--radius); box-shadow:var(--shadow); position:relative; overflow:hidden;}
+  .carnet::before{content:''; position:absolute; left:0; top:0; bottom:0; width:34px; background:repeating-linear-gradient(180deg, transparent 0 20px, var(--panel-line) 20px 21px);}
+  .carnet-inner{padding:8px 22px 8px 52px;}
+  .cat-block{padding:16px 0; border-bottom:1px dashed var(--panel-line);}
+  .cat-block:last-child{border-bottom:none;}
+  .cat-title{font-family:'Archivo Expanded',sans-serif; font-weight:700; font-size:13.5px; display:flex; align-items:baseline; gap:9px; margin-bottom:2px;}
+  .cat-title .num{font-family:'IBM Plex Mono',monospace; font-size:11px; color:#fff; background:var(--verdigris); width:20px; height:20px; border-radius:5px; display:inline-flex; align-items:center; justify-content:center; flex:none;}
+  .cat-freq{font-size:10.5px; color:var(--slate-light); font-family:'IBM Plex Mono',monospace; margin-left:29px; margin-bottom:10px; display:block;}
+  .item-row{margin:0 0 10px 29px; padding:10px 12px; background:var(--white); border:1px solid var(--panel-line); border-radius:6px;}
+  .item-txt{font-size:12.5px; margin-bottom:8px; color:#2c3530;}
+  .item-controls{display:flex; flex-wrap:wrap; gap:8px; align-items:center;}
+  select, input[type=text], textarea{font-family:'IBM Plex Sans',sans-serif; font-size:12px; border:1px solid var(--panel-line); border-radius:5px; padding:6px 8px; background:#fff; color:var(--ink);}
+  select.status-select{font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:11px;}
+  .item-controls input[type=text]{flex:1; min-width:140px;}
+  .photo-chip{font-family:'IBM Plex Mono',monospace; font-size:10.5px; border:1px dashed var(--slate-light); border-radius:5px; padding:5px 8px; color:var(--slate); background:#fbfaf6; display:inline-flex; gap:5px; align-items:center;}
+
+  .progress-wrap{display:flex; align-items:center; gap:10px;}
+  .progress-bar{flex:1; height:6px; background:var(--panel-line); border-radius:4px; overflow:hidden;}
+  .progress-bar > div{height:100%; background:var(--verdigris); transition:width .3s ease;}
+
+  .comment-thread{padding:14px 18px; display:flex; flex-direction:column; gap:10px;}
+  .comment{display:flex; gap:10px;}
+  .comment .who{width:26px; height:26px; border-radius:50%; background:var(--ink); color:#fff; flex:none; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; font-family:'IBM Plex Mono',monospace;}
+  .comment .who.ong{background:var(--rust);}
+  .comment .who.exploit{background:var(--verdigris);}
+  .comment-body{background:#fff; border:1px solid var(--panel-line); border-radius:8px; padding:8px 11px; font-size:12.5px; flex:1;}
+  .comment-meta{font-size:10px; color:var(--slate-light); font-family:'IBM Plex Mono',monospace; margin-bottom:3px;}
+  .comment-form{display:flex; gap:8px; padding:12px 18px; border-top:1px solid var(--panel-line);}
+  .comment-form input{flex:1;}
+
+  .empty{padding:40px 20px; text-align:center; color:var(--slate);}
+  .empty .big{font-family:'Archivo Expanded',sans-serif; font-size:15px; color:var(--ink); margin-bottom:4px;}
+
+  /* ---- report / excel-like output ---- */
+  .report-page{background:#fff; border:1px solid var(--panel-line); box-shadow:var(--shadow); max-width:900px; margin:0 auto; padding:34px 38px; font-family:'IBM Plex Sans',sans-serif;}
+  .report-page h2{font-size:16px; margin-bottom:2px;}
+  .report-meta{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--slate); margin-bottom:18px;}
+  .report-section-title{font-family:'Archivo Expanded',sans-serif; font-weight:700; font-size:12.5px; background:var(--ink); color:#fff; padding:6px 10px; margin:20px 0 6px; border-radius:3px;}
+  .report-table{width:100%; border-collapse:collapse; font-size:11.5px; margin-bottom:4px;}
+  .report-table th{background:#f1efe6; border:1px solid #d8d2c2; padding:6px 8px; font-size:10px;}
+  .report-table td{border:1px solid #e3ded0; padding:6px 8px; vertical-align:top;}
+  .report-table tr.cat-row td{background:#faf8f2; font-weight:700; font-size:11px;}
+
+  .top-actions{display:flex; gap:10px; margin-bottom:18px; flex-wrap:wrap; align-items:center;}
+  select.report-picker{min-width:260px;}
+
+  .section-gap{margin-top:16px;}
+  .hint{font-size:11.5px; color:var(--slate); margin-bottom:14px;}
+
+  @media print{
+    .rail,.topbar,.top-actions{display:none !important;}
+    .content{padding:0;}
+    .report-page{box-shadow:none; border:none;}
+  }
+  .menu-toggle{display:none;}
+  .rail-overlay{display:none;}
+  @media (max-width: 880px){
+    .rail{position:fixed; z-index:30; transform:translateX(-100%); transition:transform .2s; height:100dvh;}
+    .rail.open{transform:translateX(0);}
+    .app{display:block;}
+    .main{width:100%;}
+    .menu-toggle{
+      display:inline-flex; align-items:center; justify-content:center;
+      width:36px; height:36px; border-radius:7px; border:1px solid var(--panel-line);
+      background:var(--panel); flex:none; margin-right:10px;
+    }
+    .menu-toggle span, .menu-toggle span::before, .menu-toggle span::after{
+      content:''; display:block; width:16px; height:2px; background:var(--ink); position:relative;
+    }
+    .menu-toggle span::before{position:absolute; top:-5px;}
+    .menu-toggle span::after{position:absolute; top:5px;}
+    .topbar{align-items:flex-start;}
+    .rail-overlay.open{
+      display:block; position:fixed; inset:0; background:rgba(27,36,32,.45); z-index:25;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ ÉCRAN DE CONNEXION ============ -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="mark">IG</div>
+      <div><div class="name">IGEPRO</div><div class="sub">GMAO</div></div>
+    </div>
+    <h2>Connexion</h2>
+    <p class="login-hint">Accédez à votre espace selon votre rôle et vos droits.</p>
+
+    <div id="loginLoading" style="font-size:12.5px; color:var(--slate); padding:10px 0;">Chargement des données en cache…</div>
+
+    <form id="loginForm" style="display:none;">
+      <label class="login-label">Adresse e-mail</label>
+      <input type="text" id="loginEmail" placeholder="prenom.nom@igepro.cg" autocomplete="username">
+      <label class="login-label">Mot de passe</label>
+      <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
+      <div class="login-error" id="loginError"></div>
+      <button type="submit" class="btn rust" style="width:100%; justify-content:center; margin-top:6px;">Se connecter</button>
+    </form>
+
+    <div class="login-demo" id="loginDemo" style="display:none;">
+      <div class="login-demo-title">Comptes de démonstration</div>
+      <button class="demo-chip" data-demo="tech">Technicien terrain - Ada Mboua</button>
+      <button class="demo-chip" data-demo="exploit">Responsable exploitation - Laurent Petit</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SÉLECTION DU CLIENT (technicien / exploitation) ============ -->
+<div class="client-select-screen" id="clientSelectScreen" style="display:none;">
+  <div class="cs-topbar">
+    <div class="login-brand">
+      <div class="mark">IG</div>
+      <div><div class="name">IGEPRO</div><div class="sub">GMAO</div></div>
+    </div>
+    <div class="cs-user">
+      <span id="csUserName"></span>
+      <button class="btn ghost sm" id="csLogoutBtn" style="border-color:rgba(255,255,255,.3); color:#fff;">↩ Se déconnecter</button>
+    </div>
+  </div>
+  <div class="cs-body">
+    <h2>Choisissez un client</h2>
+    <p class="login-hint">Toutes les pages suivantes seront propres au client sélectionné.</p>
+    <div class="grid cards" id="clientCards"></div>
+  </div>
+</div>
+
+<div class="app" id="appShell" style="display:none;">
+  <nav class="rail" id="rail">
+    <div class="rail-brand">
+      <div class="mark">IG</div>
+      <div><div class="name">IGEPRO</div><div class="sub">GMAO</div></div>
+    </div>
+    <div class="user-card" id="userCard"></div>
+    <div class="rail-nav" id="railNav"></div>
+    <div class="rail-foot">IGEPRO - services de maintenance multi-clients</div>
+  </nav>
+
+  <div class="rail-overlay" id="railOverlay"></div>
+
+  <div id="lightboxOverlay" style="display:none; position:fixed; inset:0; background:rgba(15,18,16,.9); z-index:1000; align-items:center; justify-content:center; cursor:zoom-out;" onclick="closeLightbox()">
+    <img id="lightboxImg" src="" style="max-width:92vw; max-height:92vh; border-radius:10px; box-shadow:0 20px 60px rgba(0,0,0,.5);">
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div style="display:flex; align-items:flex-start; gap:2px;">
+        <button class="menu-toggle" id="menuToggle" aria-label="Ouvrir le menu"><span></span></button>
+        <div>
+          <div class="crumb" id="crumb">IGEPRO · <b>-</b> · -</div>
+          <h1 id="screenTitle">Mes visites</h1>
+        </div>
+      </div>
+      <div id="topbarRight"></div>
+    </div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   DONNÉES DE DÉMONSTRATION
+   ========================================================= */
+let CATEGORIES = [
+  {id:1, nom:"Structure bois et charpente", freq:"Semestrielle", items:[
+    {id:"i1", type:"visuel", texte:"Contrôle visuel des éléments porteurs",
+      elements:[{id:"i1e1",nom:"Poteaux"},{id:"i1e2",nom:"Poutres"},{id:"i1e3",nom:"Solives"},{id:"i1e4",nom:"Chevrons"}],
+      criteres:["Fissures","Déformations","Affaissements","Attaques biologiques","Dégâts causés par les rongeurs"]},
+    {id:"i2", type:"visuel", texte:"Contrôle de l'état des assemblages",
+      elements:[{id:"i2e1",nom:"Assemblages métalliques"},{id:"i2e2",nom:"Assemblages bois-bois"}],
+      criteres:["Corrosion des ferrures","Desserrage des boulons","Jeu anormal"]},
+    {id:"i3", type:"visuel", texte:"Vérification de la sous-toiture et des zones non visibles",
+      elements:[{id:"i3e1",nom:"Sous-toiture"},{id:"i3e2",nom:"Zones non visibles"}],
+      criteres:["Défaut d'étanchéité","Défaut de ventilation"]},
+    {id:"i4", type:"action", texte:"Nettoyage des points de retenue des débris et de la végétation"},
+    {id:"i5", type:"action", texte:"Traitement curatif et préventif : application de produits fongicides et insecticides sur les zones à risque"},
+  ]},
+  {id:2, nom:"Couverture et étanchéité (toiture)", freq:"Semestrielle", items:[
+    {id:"i6", type:"visuel", texte:"Contrôle de l'état général de la couverture",
+      elements:[{id:"i6e1",nom:"Tôles de couverture"}],
+      criteres:["Corrosion","Perforations","Fixations desserrées (vis/pointes)"]},
+    {id:"i7", type:"action", texte:"Nettoyage des gouttières, chéneaux et descentes d'eau pluviale"},
+    {id:"i8", type:"visuel", texte:"Vérification de l'étanchéité des points singuliers",
+      elements:[{id:"i8e1",nom:"Faîtages"},{id:"i8e2",nom:"Arêtiers"},{id:"i8e3",nom:"Pénétrations (cheminées, gaines)"}],
+      criteres:["Défaut d'étanchéité"]},
+    {id:"i9", type:"action", texte:"Rescellement/remplacement des joints et fixations défectueux"},
+    {id:"i10", type:"visuel", texte:"Vérification de la géométrie de la toiture",
+      elements:[{id:"i10e1",nom:"Charpente de toiture"}],
+      criteres:["Fléchissement"]},
+  ]},
+  {id:3, nom:"Menuiseries extérieures", freq:"Trimestrielle", items:[
+    {id:"i11", type:"visuel", texte:"Contrôle de l'état du bois",
+      elements:[{id:"i11e1",nom:"Portes extérieures"},{id:"i11e2",nom:"Fenêtres"},{id:"i11e3",nom:"Volets"}],
+      criteres:["Gonflement","Gerçure","Dégradation"]},
+    {id:"i12", type:"visuel", texte:"Vérification des quincailleries",
+      elements:[{id:"i12e1",nom:"Paumelles"},{id:"i12e2",nom:"Serrures"},{id:"i12e3",nom:"Targettes et crémones"}],
+      criteres:["Dysfonctionnement"]},
+    {id:"i13", type:"visuel", texte:"Contrôle de l'étanchéité à l'air et à l'eau",
+      elements:[{id:"i13e1",nom:"Joints"},{id:"i13e2",nom:"Calfeutrements"}],
+      criteres:["Défaut d'étanchéité"]},
+    {id:"i14", type:"action", texte:"Lubrification des mécanismes (graissage, réglage)"},
+  ]},
+  {id:4, nom:"Menuiseries intérieures", freq:"Trimestrielle", items:[
+    {id:"i15", type:"visuel", texte:"Contrôle des planchers, cloisons et mobiliers fixes",
+      elements:[{id:"i15e1",nom:"Planchers"},{id:"i15e2",nom:"Cloisons"},{id:"i15e3",nom:"Mobiliers fixes (tableaux, étagères)"}],
+      criteres:["Fissures","Instabilité / jeu anormal"]},
+    {id:"i16", type:"action", texte:"Serrage des fixations, rebouchage des fissures superficielles, ponçage des échardes"},
+    {id:"i17", type:"visuel", texte:"Vérification du fonctionnement",
+      elements:[{id:"i17e1",nom:"Portes intérieures"},{id:"i17e2",nom:"Fenêtres intérieures"}],
+      criteres:["Dysfonctionnement à l'ouverture","Dysfonctionnement à la fermeture"]},
+  ]},
+  {id:5, nom:"Électricité", freq:"Semestrielle", items:[
+    {id:"i18", type:"visuel", texte:"Contrôle visuel des tableaux électriques",
+      elements:[{id:"i18e1",nom:"Tableaux électriques"},{id:"i18e2",nom:"Connexions"},{id:"i18e3",nom:"Disjoncteurs"},{id:"i18e4",nom:"Différentiels"}],
+      criteres:["État dégradé","Connexion desserrée","Dispositif de protection défaillant (test mécanique)"]},
+    {id:"i19", type:"visuel", texte:"Contrôle des circuits",
+      elements:[{id:"i19e1",nom:"Prises"},{id:"i19e2",nom:"Interrupteurs"},{id:"i19e3",nom:"Luminaires"}],
+      criteres:["Dysfonctionnement","Dégradation visible"]},
+    {id:"i20", type:"visuel", texte:"Vérification de la mise à la terre",
+      elements:[{id:"i20e1",nom:"Mise à la terre"}],
+      criteres:["Continuité défectueuse"]},
+    {id:"i21", type:"action", texte:"Rédaction du rapport de contrôle sommaire"},
+  ]},
+  {id:6, nom:"Plomberie et sanitaires", freq:"Semestrielle", items:[
+    {id:"i22", type:"visuel", texte:"Vérification des réseaux d'alimentation et d'évacuation",
+      elements:[{id:"i22e1",nom:"Réseau d'alimentation"},{id:"i22e2",nom:"Réseau d'évacuation"}],
+      criteres:["Fuites","Corrosion"]},
+    {id:"i23", type:"visuel", texte:"Contrôle du fonctionnement",
+      elements:[{id:"i23e1",nom:"Robinets"},{id:"i23e2",nom:"Chasses d'eau"}],
+      criteres:["Dysfonctionnement"]},
+    {id:"i24", type:"action", texte:"Détartrage / nettoyage des embouts de robinets"},
+    {id:"i25", type:"action", texte:"Désinfection des sanitaires"},
+    {id:"i26", type:"visuel", texte:"Contrôle des fosses septiques / puisards",
+      elements:[{id:"i26e1",nom:"Fosses septiques"},{id:"i26e2",nom:"Puisards"}],
+      criteres:["Débordement","Fissure / dégradation de la dalle"]},
+  ]},
+  {id:7, nom:"Peintures et revêtements", freq:"Selon état", items:[
+    {id:"i27", type:"visuel", texte:"Évaluation de l'état des finitions sur les bois extérieurs",
+      elements:[{id:"i27e1",nom:"Peinture"},{id:"i27e2",nom:"Lasure"},{id:"i27e3",nom:"Vernis"}],
+      criteres:["Dégradation par UV","Dégradation par humidité","Écaillage"]},
+    {id:"i28", type:"action", texte:"Nettoyage des surfaces avant intervention"},
+    {id:"i29", type:"action", texte:"Préparation des supports : ponçage léger, rebouchage des fissures"},
+    {id:"i30", type:"action", texte:"Application d'une couche de finition de rafraîchissement sur zones dégradées"},
+  ]},
+  {id:8, nom:"Voirie et abords", freq:"Semestrielle", items:[
+    {id:"i31", type:"action", texte:"Débroussaillage et élagage - périmètre de sécurité de 2 mètres"},
+    {id:"i32", type:"visuel", texte:"Entretien de la clôture d'enceinte",
+      elements:[{id:"i32e1",nom:"Clôture d'enceinte"}],
+      criteres:["Dégradation","Portion manquante"]},
+    {id:"i33", type:"visuel", texte:"Vérification de l'évacuation des eaux de surface",
+      elements:[{id:"i33e1",nom:"Évacuation des eaux de surface"}],
+      criteres:["Stagnation","Obstruction"]},
+  ]},
+];
+function nextItemId(){
+  let max = 0;
+  CATEGORIES.forEach(cat=>cat.items.forEach(it=>{ const n=parseInt(String(it.id).replace("i",""),10); if(!isNaN(n) && n>max) max=n; }));
+  return "i"+(max+1);
+}
+function nextElementId(item){
+  let max = 0;
+  (item.elements||[]).forEach(el=>{ const m = String(el.id).match(/e(\d+)$/); if(m){ const n=parseInt(m[1],10); if(n>max) max=n; } });
+  return item.id+"e"+(max+1);
+}
+function nextCategoryId(){ return CATEGORIES.length ? Math.max(...CATEGORIES.map(c=>c.id))+1 : 1; }
+const STATUTS = ["RAS","ACTION","EN COURS","FAIT","A SURVEILLER","NA"];
+const ECHEANCES = ["S2","TR2","TR3","TR4","Non défini","NA"];
+const DEVIS_STATUTS = ["Non requis","A faire","Attente validation","Validé","Pas fait"];
+const DEVIS_STATUTS_CURATIF = ["Non requis","A faire","Attente validation","Validé MC"];
+const TODAY = new Date("2026-08-06");
+
+let CONSTAT_ID_SEQ = 1; // garantit un id unique par constat, même entre deux visites portant sur le même item de checklist
+// overrides : {itemId: {statut, echeance, remarque, devis, montant, photos}} - remplace la génération par position,
+// plus lisible et plus fiable maintenant que la checklist compte 33 items officiels (fichier Phase 2 SPAC).
+function seedConstats(overrides){
+  overrides = overrides || {};
+  const out=[];
+  CATEGORIES.forEach(cat=>{
+    cat.items.forEach(item=>{
+      let statut="RAS", echeance= cat.freq==="Trimestrielle"?"TR2":(cat.freq==="Semestrielle"?"S2":"Non défini"), remarque="", devis="Non requis", photos=0;
+      if(overrides[item.id]){
+        const o = overrides[item.id];
+        if(o.statut!==undefined) statut=o.statut;
+        if(o.echeance!==undefined) echeance=o.echeance;
+        if(o.remarque!==undefined) remarque=o.remarque;
+        if(o.devis!==undefined) devis=o.devis;
+        if(o.photos!==undefined) photos=o.photos;
+      }
+      out.push({id:'c-'+item.id+'-'+(CONSTAT_ID_SEQ++), catId:cat.id, itemId:item.id, type:item.type||"action", texte:item.texte, statut, echeance, remarque, devis, photos, reponses:[]});
+    });
+  });
+  return out;
+}
+
+/* =========================================================
+   PORTEFEUILLE CLIENTS - chaque client a son propre jeu de
+   sites / visites / historique / activité (multi-tenant)
+   ========================================================= */
+let CLIENTS = [
+  {id:"spac", nom:"SPAC", secteur:"ONG - Éducation en forêt", initials:"SP", accent:"var(--rust)"},
+];
+
+function buildClientData(id){
+  if(id==="spac"){
+    const sites = [
+      {nom:"Bomassa", eleves:210, technicien:"Ada Mboua"},
+      {nom:"Miélé", eleves:140, technicien:"Ada Mboua"},
+      {nom:"Moukouangonda", eleves:95, technicien:"Ada Mboua"},
+      {nom:"Makebe", eleves:120, technicien:"Ada Mboua"},
+      {nom:"Mbandza", eleves:160, technicien:"Ada Mboua"},
+      {nom:"Olleme", eleves:88, technicien:"Ada Mboua"},
+      {nom:"Ombo", eleves:175, technicien:"Ada Mboua"},
+      {nom:"Sanza", eleves:130, technicien:"Ada Mboua"},
+    ];
+    const visites = [
+      {id:"v1", site:"Bomassa", date:"2026-05-18", technicien:"Ada Mboua", statut:"soumise",
+        constats:seedConstats({
+          i1:{statut:"ACTION", remarque:"Présence d'insectes sur les planches d'ossature - désinfection réalisée.", photos:1},
+          i6:{statut:"A SURVEILLER", remarque:"La toiture côté droit du bâtiment principal commence à rouiller.", photos:1},
+          i20:{statut:"ACTION", devis:"Validé", remarque:"Barrette de terre hors service, remplacée."},
+          i23:{statut:"ACTION", devis:"Validé", remarque:"1 robinet hors service, remplacé."},
+        }),
+        curatif:[
+          {id:'cur1', texte:"Remplacer le robinet de lavabo - salle de bain des enfants", statut:"FAIT", echeance:"NA", devis:"Validé MC", remarque:"", montant:45000},
+          {id:'cur2', texte:"Réparer l'étanchéité du toit de la cabane", statut:"ACTION", echeance:"NA", devis:"Attente validation", remarque:"", montant:310000},
+          {id:'cur5', texte:"Refaire le plafond et traiter le bois dans la cabane (couvre-joints à compléter)", statut:"EN COURS", echeance:"S2", devis:"Validé MC", remarque:"", montant:95000},
+        ],
+        commentaires:[{qui:"exploit", nom:"Laurent Petit", texte:"Bonne visite. Merci de préciser le montant du devis toiture cabane.", date:"19/05"}]},
+      {id:"v2", site:"Sanza", date:"2026-05-14", technicien:"Ada Mboua", statut:"validee",
+        constats:seedConstats({}),
+        curatif:[{id:'cur3', texte:"Remplacer moustiquaires abîmées", statut:"FAIT", echeance:"NA", devis:"Validé MC", remarque:"", montant:60000}],
+        commentaires:[
+          {qui:"exploit", nom:"Laurent Petit", texte:"Visite validée, RAS.", date:"15/05"},
+          {qui:"ong", nom:"SPAC - Coord. Sangha", texte:"Bien reçu, merci pour le suivi.", date:"16/05"},
+        ]},
+      {id:"v3", site:"Ombo", date:"2026-05-10", technicien:"Ada Mboua", statut:"validee",
+        constats:seedConstats({ i12:{statut:"ACTION", remarque:"Fixation de fenêtre à resserrer", devis:"A faire"} }),
+        curatif:[{id:'cur4', texte:"Reprendre la peinture extérieure côté cour", statut:"ACTION", echeance:"NA", devis:"A faire", remarque:"", montant:180000}],
+        commentaires:[]},
+      {id:"v4", site:"Miélé", date:"2026-06-02", technicien:"Ada Mboua", statut:"brouillon",
+        constats:seedConstats({}).map((c,idx)=> idx<6 ? c : {...c, statut:"", echeance:"", devis:""}),
+        curatif:[], commentaires:[]},
+
+      // ---- Mission 2 / Phase 2 (juin 2026) - données extraites du fichier "260617_SPAC_Mission2_Maintenance_Travaux_phase_2_rev.xlsx" ----
+      {id:"vm2-bomassa", site:"Bomassa", date:"2026-06-18", technicien:"Ada Mboua", statut:"soumise",
+        constats:seedConstats({ i7:{statut:"A SURVEILLER", remarque:"Gouttières bouchées, aggravant l'écoulement - fabrication de nouvelles gouttières en cours."} }),
+        curatif:[
+          {id:'m2-b1', texte:"Fabrication des gouttières pour Bomassa, Miélé et Moukouangonda", statut:"FAIT", echeance:"NA", devis:"Validé MC", remarque:"", montant:380000},
+          {id:'m2-b2', texte:"Installation des gouttières", statut:"ACTION", echeance:"NA", devis:"A faire", remarque:"", montant:220000},
+          {id:'m2-b3', texte:"Réalisation de puits perdus", statut:"ACTION", echeance:"NA", devis:"Attente validation", remarque:"", montant:300000},
+          {id:'m2-b4', texte:"Complément de la faîtière sur le toit de la cabane", statut:"ACTION", echeance:"NA", devis:"A faire", remarque:"", montant:90000},
+        ],
+        commentaires:[{qui:"tech", nom:"Ada Mboua", texte:"Mission 2 (Phase 2) soumise - travaux gouttières et puits perdus à valider.", date:"18/06"}]},
+      {id:"vm2-miele", site:"Miélé", date:"2026-06-19", technicien:"Ada Mboua", statut:"validee",
+        constats:seedConstats({}),
+        curatif:[
+          {id:'m2-m1', texte:"Installation des gouttières", statut:"FAIT", echeance:"NA", devis:"Validé MC", remarque:"", montant:210000},
+          {id:'m2-m2', texte:"Réalisation de puits perdus", statut:"FAIT", echeance:"NA", devis:"Validé MC", remarque:"", montant:280000},
+          {id:'m2-m3', texte:"Aménagement d'une douche au niveau des latrines existantes pour répondre aux besoins d'hygiène", statut:"ACTION", echeance:"NA", devis:"Attente validation", remarque:"", montant:150000},
+        ],
+        commentaires:[{qui:"exploit", nom:"Laurent Petit", texte:"Mission 2 validée. Douche latrines en attente d'arbitrage budgétaire SPAC.", date:"20/06"}]},
+      {id:"vm2-moukouangonda", site:"Moukouangonda", date:"2026-06-20", technicien:"Ada Mboua", statut:"validee",
+        constats:seedConstats({}),
+        curatif:[
+          {id:'m2-mo1', texte:"Installation des gouttières", statut:"FAIT", echeance:"NA", devis:"Validé MC", remarque:"", montant:200000},
+          {id:'m2-mo2', texte:"Réalisation de puits perdus", statut:"FAIT", echeance:"NA", devis:"Validé MC", remarque:"", montant:270000},
+          {id:'m2-mo3', texte:"Pose des couvre-joints", statut:"FAIT", echeance:"NA", devis:"Validé MC", remarque:"", montant:60000},
+        ],
+        commentaires:[]},
+      {id:"vm2-sanza", site:"Sanza", date:"2026-06-25", technicien:"Ada Mboua", statut:"soumise",
+        constats:seedConstats({ i26:{statut:"A SURVEILLER", remarque:"Dalle de la fosse septique fissurée, reprise prévue."} }),
+        curatif:[
+          {id:'m2-s1', texte:"Fabrication des gouttières pour Sanza, Makébé, Olléme, Mbandza et Ombo", statut:"FAIT", echeance:"NA", devis:"Validé MC", remarque:"", montant:520000},
+          {id:'m2-s2', texte:"Installation des gouttières", statut:"ACTION", echeance:"NA", devis:"A faire", remarque:"", montant:240000},
+          {id:'m2-s3', texte:"Réalisation de puits perdus", statut:"ACTION", echeance:"NA", devis:"Attente validation", remarque:"", montant:310000},
+          {id:'m2-s4', texte:"Alimentation par gravité du polytank", statut:"ACTION", echeance:"NA", devis:"A faire", remarque:"", montant:180000},
+          {id:'m2-s5', texte:"Installation d'une barrière autour du forage et de l'antenne", statut:"ACTION", echeance:"NA", devis:"Attente validation", remarque:"", montant:260000},
+          {id:'m2-s6', texte:"Reprise de la dalle des fosses septiques", statut:"ACTION", echeance:"NA", devis:"A faire", remarque:"", montant:190000},
+        ],
+        commentaires:[{qui:"tech", nom:"Ada Mboua", texte:"Mission 2 soumise - plusieurs devis en attente sur Sanza (forage, polytank, fosses).", date:"25/06"}]},
+      {id:"vm2-makebe", site:"Makebe", date:"2026-06-26", technicien:"Ada Mboua", statut:"validee",
+        constats:seedConstats({}),
+        curatif:[
+          {id:'m2-mk1', texte:"Installation des gouttières", statut:"FAIT", echeance:"NA", devis:"Validé MC", remarque:"", montant:190000},
+          {id:'m2-mk2', texte:"Réalisation de puits perdus", statut:"FAIT", echeance:"NA", devis:"Validé MC", remarque:"", montant:260000},
+        ],
+        commentaires:[]},
+      {id:"vm2-olleme", site:"Olleme", date:"2026-06-27", technicien:"Ada Mboua", statut:"validee",
+        constats:seedConstats({}),
+        curatif:[
+          {id:'m2-o1', texte:"Installation des gouttières", statut:"FAIT", echeance:"NA", devis:"Validé MC", remarque:"", montant:195000},
+          {id:'m2-o2', texte:"Réalisation de puits perdus", statut:"FAIT", echeance:"NA", devis:"Validé MC", remarque:"", montant:265000},
+          {id:'m2-o3', texte:"Travaux complémentaires toiture", statut:"ACTION", echeance:"NA", devis:"Attente validation", remarque:"", montant:140000},
+        ],
+        commentaires:[]},
+      {id:"vm2-mbandza", site:"Mbandza", date:"2026-06-28", technicien:"Ada Mboua", statut:"validee",
+        constats:seedConstats({}),
+        curatif:[
+          {id:'m2-mb1', texte:"Installation des gouttières", statut:"FAIT", echeance:"NA", devis:"Validé MC", remarque:"", montant:190000},
+          {id:'m2-mb2', texte:"Réalisation de puits perdus", statut:"FAIT", echeance:"NA", devis:"Validé MC", remarque:"", montant:255000},
+        ],
+        commentaires:[]},
+      {id:"vm2-ombo", site:"Ombo", date:"2026-06-29", technicien:"Ada Mboua", statut:"soumise",
+        constats:seedConstats({ i32:{statut:"A SURVEILLER", remarque:"Clôture absente sur une partie du site - construction prévue."} }),
+        curatif:[
+          {id:'m2-om1', texte:"Installation des gouttières", statut:"ACTION", echeance:"NA", devis:"A faire", remarque:"", montant:200000},
+          {id:'m2-om2', texte:"Réalisation de puits perdus", statut:"ACTION", echeance:"NA", devis:"Attente validation", remarque:"", montant:275000},
+          {id:'m2-om3', texte:"Construction d'une clôture en grillage autour de tout le site", statut:"ACTION", echeance:"NA", devis:"A faire", remarque:"", montant:650000},
+        ],
+        commentaires:[{qui:"tech", nom:"Ada Mboua", texte:"Mission 2 soumise - clôture Ombo à chiffrer, montant important.", date:"29/06"}]},
+    ];
+    const history = [
+      {site:"Bomassa", date:"2025-11-20", technicien:"Ada Mboua", statut:"validee", ras:20, action:5, encours:0, fait:2, asurv:0, devisAttente:0, devisValide:220000},
+      {site:"Miélé", date:"2025-12-05", technicien:"Ada Mboua", statut:"validee", ras:24, action:2, encours:0, fait:1, asurv:0, devisAttente:0, devisValide:60000},
+      {site:"Moukouangonda", date:"2026-01-15", technicien:"Ada Mboua", statut:"validee", ras:25, action:1, encours:0, fait:0, asurv:0, devisAttente:0, devisValide:0},
+      {site:"Makebe", date:"2026-01-22", technicien:"Ada Mboua", statut:"validee", ras:23, action:3, encours:1, fait:0, asurv:0, devisAttente:120000, devisValide:0},
+      {site:"Mbandza", date:"2026-02-08", technicien:"Ada Mboua", statut:"validee", ras:26, action:1, encours:0, fait:0, asurv:0, devisAttente:0, devisValide:0},
+      {site:"Olleme", date:"2026-02-19", technicien:"Ada Mboua", statut:"validee", ras:25, action:2, encours:0, fait:0, asurv:0, devisAttente:0, devisValide:35000},
+      {site:"Ombo", date:"2026-02-27", technicien:"Ada Mboua", statut:"validee", ras:22, action:5, encours:1, fait:1, asurv:1, devisAttente:0, devisValide:95000},
+      {site:"Sanza", date:"2026-03-06", technicien:"Ada Mboua", statut:"validee", ras:24, action:3, encours:0, fait:1, asurv:0, devisAttente:0, devisValide:60000},
+      {site:"Bomassa", date:"2026-03-25", technicien:"Ada Mboua", statut:"validee", ras:19, action:7, encours:1, fait:2, asurv:2, devisAttente:180000, devisValide:90000},
+      {site:"Makebe", date:"2026-04-10", technicien:"Ada Mboua", statut:"validee", ras:24, action:2, encours:0, fait:0, asurv:0, devisAttente:0, devisValide:0},
+      {site:"Moukouangonda", date:"2026-04-18", technicien:"Ada Mboua", statut:"validee", ras:26, action:1, encours:0, fait:0, asurv:0, devisAttente:0, devisValide:0},
+      {site:"Mbandza", date:"2026-06-14", technicien:"Ada Mboua", statut:"validee", ras:24, action:3, encours:0, fait:0, asurv:0, devisAttente:0, devisValide:75000},
+      {site:"Olleme", date:"2026-06-29", technicien:"Ada Mboua", statut:"validee", ras:26, action:1, encours:0, fait:0, asurv:0, devisAttente:0, devisValide:0},
+      {site:"Sanza", date:"2026-07-19", technicien:"Ada Mboua", statut:"validee", ras:22, action:4, encours:1, fait:0, asurv:1, devisAttente:0, devisValide:40000},
+    ];
+    const activity = [
+      {type:"validation", texte:"Visite Sanza (19/07) validée par Laurent Petit", date:"20/07"},
+      {type:"devis", texte:"Devis peinture Ombo (180 000 FCFA) en attente d'arbitrage SPAC", date:"12/05"},
+      {type:"soumission", texte:"Ada Mboua a soumis la visite de Bomassa", date:"18/05"},
+      {type:"alerte", texte:"Toiture Bomassa (côté droit) signalée « à surveiller »", date:"18/05"},
+      {type:"validation", texte:"SPAC a validé le devis mise à la terre Bomassa", date:"20/05"},
+      {type:"devis", texte:"Devis étanchéité cabane Bomassa (310 000 FCFA) en attente de validation ONG", date:"19/05"},
+      {type:"soumission", texte:"Ada Mboua a démarré la visite de Miélé", date:"02/06"},
+      {type:"validation", texte:"Visite Ombo (10/05) validée - 1 action de menuiserie ouverte", date:"11/05"},
+    ];
+    return {sites, visites, history, activity};
+  }
+}
+
+const CLIENT_DATA = {};
+CLIENTS.forEach(cl=>{ CLIENT_DATA[cl.id] = buildClientData(cl.id); });
+
+/* =========================================================
+   PERSISTANCE - cache navigateur (aucune base de données)
+   Toutes les données métier (clients, sites, visites, checklist,
+   utilisateurs) et la session en cours sont sauvegardées via
+   window.storage, propre à cet artifact. Aucun backend requis :
+   si le cache n'est pas disponible (fichier ouvert hors de
+   Claude.ai), l'application continue de fonctionner normalement,
+   simplement sans persistance entre deux ouvertures.
+   ========================================================= */
+const STORAGE_KEY = "igepro-app-state-v1";
+let STORAGE_READY = false;
+let SAVE_TIMER = null;
+let SAVE_IN_FLIGHT = false;
+
+function hasStorageApi(){ return typeof window!=="undefined" && !!window.storage; }
+
+async function loadPersistedData(){
+  if(!hasStorageApi()){ STORAGE_READY = true; return; }
+  try{
+    const res = await window.storage.get(STORAGE_KEY, false);
+    if(res && res.value){
+      const data = JSON.parse(res.value);
+      if(Array.isArray(data.categories)) CATEGORIES = data.categories;
+      if(Array.isArray(data.clients)) CLIENTS = data.clients;
+      if(Array.isArray(data.users)) USERS = data.users;
+      if(data.clientData && typeof data.clientData==="object"){
+        Object.keys(CLIENT_DATA).forEach(k=>delete CLIENT_DATA[k]);
+        Object.assign(CLIENT_DATA, data.clientData);
+      }
+      CURRENT_SESSION = data.session || null;
+    }
+  }catch(e){
+    console.warn("Aucune donnée en cache trouvée - démarrage avec le jeu de démonstration.", e);
+  }
+  STORAGE_READY = true;
+}
+
+function scheduleSave(){
+  if(!STORAGE_READY || !hasStorageApi()) return;
+  clearTimeout(SAVE_TIMER);
+  SAVE_TIMER = setTimeout(saveAll, 500);
+}
+async function saveAll(){
+  if(!hasStorageApi()) return;
+  if(SAVE_IN_FLIGHT){ scheduleSave(); return; }
+  SAVE_IN_FLIGHT = true;
+  try{
+    await window.storage.set(STORAGE_KEY, JSON.stringify({
+      categories: CATEGORIES,
+      clients: CLIENTS,
+      users: USERS,
+      clientData: CLIENT_DATA,
+      session: CURRENT_USER ? {email: CURRENT_USER.email, activeClient: ACTIVE_CLIENT, screen: STATE.screen} : null,
+    }), false);
+  }catch(e){ console.warn("Sauvegarde en cache impossible :", e); }
+  SAVE_IN_FLIGHT = false;
+}
+let CURRENT_SESSION = null;
+
+// Variables actives - pointent vers les données du client sélectionné
+let ACTIVE_CLIENT = null;
+let SITES = [], VISITES = [], HISTORY = [], ACTIVITY = [], SITE_NAMES = [];
+function loadClientData(clientId){
+  ACTIVE_CLIENT = clientId;
+  const d = CLIENT_DATA[clientId];
+  SITES = d.sites; VISITES = d.visites; HISTORY = d.history; ACTIVITY = d.activity;
+  SITE_NAMES = SITES.map(s=>s.nom);
+}
+function activeClientMeta(){ return CLIENTS.find(c=>c.id===ACTIVE_CLIENT); }
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+function fmtDate(iso){ const [y,m,d]=iso.split("-"); return d+"/"+m+"/"+y; }
+function fmtFCFA(n){ return n.toLocaleString('fr-FR')+' FCFA'; }
+function badgeClass(s){
+  return {"RAS":"ras","ACTION":"action","EN COURS":"encours","FAIT":"fait","A SURVEILLER":"action","NA":"na",
+    "brouillon":"brouillon","soumise":"soumise","validee":"validee"}[s] || "na";
+}
+function countPreventifActions(v){ return v.constats.filter(c=>c.statut==="ACTION"||c.statut==="A SURVEILLER"||c.statut==="EN COURS").length; }
+function countCuratifActions(v){ return v.curatif.filter(c=>c.statut==="ACTION"||c.statut==="A SURVEILLER"||c.statut==="EN COURS").length; }
+// Renvoie les visites pertinentes selon qui regarde :
+// "ong"    → uniquement ce que l'exploitation a déjà validé
+// "tech"   → uniquement les visites du technicien connecté, y compris ses brouillons
+// "exploit"→ tout le portefeuille du client, hors brouillons (privés au technicien tant que non soumis)
+/* =========================================================
+   PAGINATION - helper générique, 6 éléments par page
+   ========================================================= */
+const PAGE_SIZE = 6;
+function pageOf(key){ return STATE[key] || 1; }
+function totalPages(arr){ return Math.max(1, Math.ceil(arr.length / PAGE_SIZE)); }
+function paginate(arr, key){
+  const tp = totalPages(arr);
+  let page = pageOf(key);
+  if(page > tp){ page = tp; STATE[key] = tp; }
+  const start = (page-1) * PAGE_SIZE;
+  return arr.slice(start, start + PAGE_SIZE);
+}
+function renderPager(key, arr){
+  const tp = totalPages(arr);
+  if(tp <= 1) return "";
+  const page = pageOf(key);
+  return `<div class="pager">
+    <button class="btn ghost sm" ${page<=1?'disabled':''} onclick="setPage('${key}',${page-1})">← Précédent</button>
+    <span class="pager-info">Page ${page} / ${tp} · ${arr.length} élément(s)</span>
+    <button class="btn ghost sm" ${page>=tp?'disabled':''} onclick="setPage('${key}',${page+1})">Suivant →</button>
+  </div>`;
+}
+function setPage(key, page){ STATE[key] = page; render(); }
+
+function scopedVisites(scope){
+  if(scope==="ong") return VISITES.filter(v=>v.statut==="validee");
+  if(scope==="tech") return VISITES.filter(v=>CURRENT_USER && v.technicien===CURRENT_USER.nom);
+  return VISITES.filter(v=>v.statut!=="brouillon");
+}
+function countAllPreventifOuvert(scope){
+  return scopedVisites(scope).reduce((s,v)=>s+v.constats.filter(c=>c.statut==="ACTION"||c.statut==="A SURVEILLER"||c.statut==="EN COURS").length,0);
+}
+function countAllCuratifOuvert(scope){
+  return scopedVisites(scope).reduce((s,v)=>s+countCuratifActions(v),0);
+}
+function findConstat(id){ for(const v of VISITES){ const f=v.constats.find(x=>x.id===id)||v.curatif.find(x=>x.id===id); if(f) return f; } }
+
+// Toutes les visites d'un site (détaillées + historique), triées par date desc
+function allVisitesForSite(site){
+  const det = VISITES.filter(v=>v.site===site).map(v=>({site:v.site, date:v.date, technicien:v.technicien, statut:v.statut,
+    ras:v.constats.filter(c=>c.statut==="RAS").length, action:v.constats.filter(c=>c.statut==="ACTION").length,
+    encours:v.constats.filter(c=>c.statut==="EN COURS").length, fait:v.constats.filter(c=>c.statut==="FAIT").length,
+    asurv:v.constats.filter(c=>c.statut==="A SURVEILLER").length, curatifOuvert:countCuratifActions(v), ref:v, detailed:true}));
+  const hist = HISTORY.filter(h=>h.site===site).map(h=>({...h, curatifOuvert:h.curatifOuvert||0, detailed:false}));
+  return det.concat(hist).sort((a,b)=>b.date.localeCompare(a.date));
+}
+function lastVisiteForSite(site){ return allVisitesForSite(site)[0]; }
+// Côté client/ONG : on ne montre que ce qui a été contrôlé et validé par l'exploitation.
+function lastValidatedVisiteForSite(site){ return allVisitesForSite(site).find(v=>v.statut==="validee") || null; }
+
+function healthScore(v){
+  if(!v) return null;
+  const total = v.ras+v.action+v.encours+v.fait+v.asurv;
+  if(total===0) return 100;
+  return Math.round(v.ras/total*100);
+}
+function healthLabel(score){
+  if(score===null) return {txt:"-", cls:"na"};
+  if(score>=85) return {txt:"Bon", cls:"bon"};
+  if(score>=65) return {txt:"Vigilance", cls:"vigilance"};
+  return {txt:"Critique", cls:"critique"};
+}
+function nextDue(v){
+  const last = new Date(v.date);
+  const due = new Date(last); due.setMonth(due.getMonth()+6);
+  const daysLeft = Math.round((due-TODAY)/86400000);
+  let status = "ok";
+  if(daysLeft<0) status="enretard"; else if(daysLeft<=30) status="bientot";
+  return {due, daysLeft, status};
+}
+
+function countDevisAttenteMontant(){
+  let n=0, montant=0;
+  VISITES.forEach(v=>{ [...v.constats, ...v.curatif].forEach(c=>{ if(c.devis==="Attente validation"){ n++; montant += c.montant||0; } }); });
+  HISTORY.forEach(h=>{ if(h.devisAttente>0){ n++; montant+=h.devisAttente; } });
+  return {n, montant};
+}
+// Version client/ONG : uniquement les devis rattachés à une visite déjà contrôlée par l'exploitation
+// (une visite encore "soumise" n'a pas encore été vérifiée, elle n'est donc pas visible du client).
+function countDevisAttenteMontantOng(){
+  // N'inclut que les devis réellement actionnables par le client (issus de visites validées, avec un item traçable).
+  // Les montants historiques agrégés ne sont pas comptés ici pour rester cohérent avec ce qui est affiché dans "Devis à valider".
+  let n=0, montant=0;
+  VISITES.filter(v=>v.statut==="validee").forEach(v=>{ [...v.constats, ...v.curatif].forEach(c=>{ if(c.devis==="Attente validation"){ n++; montant += c.montant||0; } }); });
+  return {n, montant};
+}
+function totalDevisValideAnnee(){
+  let total=0;
+  VISITES.forEach(v=>[...v.constats, ...v.curatif].forEach(c=>{ if(c.devis==="Validé") total += c.montant||0; }));
+  HISTORY.forEach(h=>total+=h.devisValide||0);
+  return total;
+}
+function monthKey(iso){ const [y,m]=iso.split("-"); return y+"-"+m; }
+function monthLabel(key){
+  const noms=["Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"];
+  const [y,m]=key.split("-"); return noms[parseInt(m)-1]+" "+y.slice(2);
+}
+
+/* =========================================================
+   AUTHENTIFICATION - comptes et droits par rôle
+   ========================================================= */
+let USERS = [
+  {email:"ada.mboua@igepro.cg", password:"demo", role:"tech", nom:"Ada Mboua", fonction:"Technicien terrain"},
+  {email:"laurent.petit@igepro.cg", password:"demo", role:"exploit", nom:"Laurent Petit", fonction:"Responsable exploitation"},
+];
+const DEMO_FILL = {
+  tech:{email:"ada.mboua@igepro.cg", password:"demo"},
+  exploit:{email:"laurent.petit@igepro.cg", password:"demo"},
+};
+const ROLE_DEFAULT_SCREEN = {tech:"tech-preventif", exploit:"exploit-dashboard", ong:"ong-dashboard"};
+const ROLE_LABEL = {tech:"TECHNICIEN TERRAIN", exploit:"RESPONSABLE EXPLOITATION", ong:"CLIENT / ONG"};
+let CURRENT_USER = null;
+
+/* =========================================================
+   ÉTAT + NAVIGATION
+   ========================================================= */
+let STATE = { role:"tech", screen:"tech-preventif", activeVisiteId:"v1", reportVisiteId:"v2", adminTab:"clients", adminSitesClient:null };
+
+const NAV = {
+  tech:[
+    {id:"tech-preventif", label:"Maintenance préventive", count:null},
+    {id:"tech-curatif", label:"Maintenance curative", count:()=>countAllCuratifOuvert("tech"), warn:true},
+  ],
+  exploit:[
+    {id:"exploit-dashboard", label:"Tableau de bord", count:null},
+    {id:"exploit-preventif", label:"Maintenance préventive", count:()=>countAllPreventifOuvert("exploit"), warn:true},
+    {id:"exploit-curatif", label:"Maintenance curative (MC)", count:()=>countAllCuratifOuvert("exploit"), warn:true},
+    {id:"exploit-sites", label:"Tous les sites", count:()=>SITES.length},
+    {id:"exploit-planning", label:"Planning", count:null},
+    {id:"exploit-stats", label:"Statistiques", count:null},
+    {id:"exploit-devis", label:"Devis & budget", count:()=>countDevisAttenteMontant().n, warn:true},
+    {id:"exploit-items", label:"Checklist & items", count:()=>CATEGORIES.reduce((s,c)=>s+c.items.length,0)},
+    {id:"exploit-admin", label:"Clients & utilisateurs", count:()=>CLIENTS.length},
+  ],
+  ong:[
+    {id:"ong-dashboard", label:"Tableau de bord", count:null},
+    {id:"ong-historique", label:"Historique des visites", count:()=>VISITES.filter(v=>v.statut==="validee").length},
+    {id:"ong-preventif", label:"Maintenance préventive", count:null},
+    {id:"ong-curatif", label:"Maintenance curative (MC)", count:null},
+    {id:"ong-sites", label:"Nos écoles", count:()=>SITES.length},
+    {id:"ong-gestion-sites", label:"Gérer mes sites", count:null},
+    {id:"ong-devis", label:"Devis à valider", count:()=>countDevisAttenteMontantOng().n, warn:true},
+  ],
+  common:[ {id:"report", label:"Générer un rapport", count:null} ]
+};
+
+function initialsOf(nom){
+  return (nom||"?").trim().split(/\s+/).map(w=>w[0]).join("").slice(0,2).toUpperCase();
+}
+const ROLE_ACCENT = {tech:"var(--rust)", exploit:"var(--verdigris)", ong:"var(--amber)"};
+
+function renderRail(){
+  const uc = document.getElementById("userCard");
+  if(CURRENT_USER){
+    const cl = activeClientMeta();
+    const showSwitch = CURRENT_USER.role !== "ong";
+    const accent = ROLE_ACCENT[CURRENT_USER.role] || "var(--verdigris)";
+    uc.innerHTML = `
+      <div class="uc-top">
+        <div class="uc-avatar" style="background:${accent}">${initialsOf(CURRENT_USER.nom)}</div>
+        <div class="uc-info">
+          <div class="uc-name">${CURRENT_USER.nom}</div>
+          <span class="uc-role-tag">${ROLE_LABEL[CURRENT_USER.role]}</span>
+        </div>
+        <button class="uc-logout-icon" id="logoutBtn" title="Se déconnecter">⏻</button>
+      </div>
+      ${cl ? `<div class="uc-client-chip">
+        <div class="uc-client-mark" style="background:${cl.accent}">${cl.initials}</div>
+        <div class="uc-client-name">${cl.nom}</div>
+        ${showSwitch ? `<button class="uc-client-switch" id="switchClientBtn" title="Changer de client">⇄</button>` : ''}
+      </div>` : ''}`;
+    document.getElementById("logoutBtn").onclick = logout;
+    const sw = document.getElementById("switchClientBtn");
+    if(sw) sw.onclick = showClientSelect;
+  }
+  const nav = document.getElementById("railNav");
+  const items = NAV[STATE.role].concat(NAV.common);
+  const roleLabel = {tech:"TECHNICIEN", exploit:"EXPLOITATION", ong:"CLIENT / ONG"}[STATE.role];
+  nav.innerHTML = `<div class="label">${roleLabel}</div>` + items.map(it=>{
+    const c = it.count ? it.count() : null;
+    return `<button data-screen="${it.id}" class="${STATE.screen===it.id?'active':''}">
+      <span>${it.label}</span>${c!==null?`<span class="count ${it.warn&&c>0?'warn':''}">${c}</span>`:''}
+    </button>`;
+  }).join("");
+  nav.querySelectorAll("button").forEach(b=>{ b.onclick=()=>{STATE.screen=b.dataset.screen; closeRail(); render();}; });
+}
+
+function goto(screen){ STATE.screen=screen; render(); }
+function openVisite(id){
+  STATE.activeVisiteId=id;
+  STATE.screen = STATE.role==="tech" ? "tech-visite-detail" : STATE.role==="ong" ? "ong-visite-detail" : "exploit-visite-detail";
+  render();
+}
+
+/* =========================================================
+   RENDER ROUTER
+   ========================================================= */
+function render(){
+  if(!CURRENT_USER) return;
+  scheduleSave();
+  const allowedIds = NAV[STATE.role].concat(NAV.common).map(i=>i.id).concat(["tech-visite-detail","exploit-visite-detail","ong-visite-detail","tech-school","tech-wizard-picker","tech-wizard-item","tech-action","tech-action-detail","tech-curatif-site","tech-curatif-detail","exploit-preventif-liste","exploit-curatif-detail","exploit-site-preventif"]);
+  if(!allowedIds.includes(STATE.screen)) STATE.screen = ROLE_DEFAULT_SCREEN[STATE.role];
+  renderRail();
+  const titles = {
+    "tech-preventif":"Maintenance préventive", "tech-school":"Sélection du point de contrôle", "tech-wizard-picker":"Contrôle visuel", "tech-wizard-item":"Contrôle visuel", "tech-action":"Actions",
+    "tech-curatif":"Maintenance curative", "tech-curatif-site":"Maintenance curative", "tech-curatif-detail":"Détail de l'intervention", "tech-action-detail":"Détail",
+    "exploit-dashboard":"Tableau de bord", "exploit-preventif":"Maintenance préventive", "exploit-preventif-liste":"Maintenance préventive - vue détaillée", "exploit-site-preventif":"Historique du site", "exploit-curatif":"Maintenance curative", "exploit-curatif-detail":"Détail de l'intervention", "exploit-sites":"Tous les sites",
+    "exploit-planning":"Planning des visites", "exploit-stats":"Statistiques", "exploit-devis":"Devis & budget", "exploit-items":"Checklist & items",
+    "exploit-admin":"Clients & utilisateurs", "ong-visite-detail":"Détail de la maintenance préventive",
+    "ong-dashboard":"Tableau de bord", "ong-historique":"Historique des visites", "ong-preventif":"Maintenance préventive", "ong-curatif":"Maintenance curative", "ong-sites":"Nos écoles", "ong-gestion-sites":"Gérer mes sites", "ong-devis":"Devis à valider",
+    "report":"Générer un rapport", "tech-visite-detail":"Détail de la maintenance préventive", "exploit-visite-detail":"Détail de la maintenance préventive",
+  };
+  const crumbs = {tech:"Technicien", exploit:"Exploitation", ong:"Espace client"};
+  const clMeta = activeClientMeta();
+  document.getElementById("crumb").innerHTML = `IGEPRO · <b>${clMeta?clMeta.nom:'-'}</b> · ${crumbs[STATE.role]}`;
+  document.getElementById("screenTitle").textContent = titles[STATE.screen] || "";
+  const c = document.getElementById("content"); const top = document.getElementById("topbarRight"); top.innerHTML="";
+
+  const routes = {
+    "tech-preventif": ()=>renderTechPreventifHub(c, top),
+    "tech-school": ()=>renderTechSchoolChoice(c, top),
+    "tech-wizard-picker": ()=>renderWizardPicker(c, top),
+    "tech-wizard-item": ()=>renderWizardItem(c, top),
+    "tech-action": ()=>renderTechAction(c, top),
+    "tech-action-detail": ()=>renderTechActionDetail(c, top),
+    "tech-curatif": ()=>renderTechCuratifHub(c, top),
+    "tech-curatif-site": ()=>renderTechCuratifSite(c, top),
+    "tech-curatif-detail": ()=>renderTechCuratifDetail(c, top),
+    "tech-visite-detail": ()=>renderVisiteDetailShared(c, top, VISITES.find(v=>v.id===STATE.activeVisiteId), "tech"),
+    "exploit-dashboard": ()=>renderExploitDashboard(c, top),
+    "exploit-preventif": ()=>renderExploitPreventifSites(c, top),
+    "exploit-preventif-liste": ()=>renderMaintenanceListe(c, top, "preventif", "exploit"),
+    "exploit-site-preventif": ()=>renderExploitSitePreventif(c, top),
+    "exploit-curatif": ()=>renderMaintenanceListe(c, top, "curatif", "exploit"),
+    "exploit-curatif-detail": ()=>renderExploitCuratifDetail(c, top),
+    "exploit-visite-detail": ()=>renderExploitDetail(c, top),
+    "exploit-sites": ()=>renderSitesGrid(c, top),
+    "exploit-planning": ()=>renderPlanning(c, top, "exploit"),
+    "exploit-stats": ()=>renderStats(c, top),
+    "exploit-devis": ()=>renderDevisBudget(c, top),
+    "exploit-items": ()=>renderItemsManagement(c, top),
+    "exploit-admin": ()=>renderClientsUsers(c, top),
+    "ong-visite-detail": ()=>renderOngVisiteDetail(c, top),
+    "ong-dashboard": ()=>renderOngDashboard(c, top),
+    "ong-historique": ()=>renderOngHistorique(c, top),
+    "ong-preventif": ()=>renderMaintenanceListe(c, top, "preventif", "ong"),
+    "ong-curatif": ()=>renderMaintenanceListe(c, top, "curatif", "ong"),
+    "ong-sites": ()=>renderSitesGrid(c, top),
+    "ong-devis": ()=>renderOngDevis(c, top),
+    "ong-gestion-sites": ()=>renderOngGestionSites(c, top),
+    "report": ()=>renderReport(c, top),
+  };
+  (routes[STATE.screen] || routes["tech-preventif"])();
+}
+
+/* ---------- TECHNICIEN : hub Maintenance préventive (choix de l'école) ---------- */
+function renderTechPreventifHub(c, top){
+  top.innerHTML = "";
+  const mySites = CURRENT_USER ? SITES.filter(s=>s.technicien===CURRENT_USER.nom) : [];
+  if(mySites.length===0){
+    c.innerHTML = `<div class="panel"><div class="empty"><div class="big">Aucun site assigné</div>L'exploitation ne vous a pas encore affecté à une école pour ${activeClientMeta()?activeClientMeta().nom:'ce client'}.</div></div>`;
+    return;
+  }
+  const historique = CURRENT_USER ? VISITES.filter(v=>v.technicien===CURRENT_USER.nom && v.statut!=="brouillon").sort((a,b)=>b.date.localeCompare(a.date)) : [];
+  const pageHist = paginate(historique, "pgTechHist");
+  c.innerHTML = `
+    <div class="hint" style="margin-top:0;">Choisissez l'école à contrôler. Toutes les données saisies ensuite seront enregistrées uniquement pour cette école.</div>
+    <div class="grid cards" style="margin-bottom:20px;">
+      ${mySites.map(s=>{
+        const draft = VISITES.find(v=>v.site===s.nom && v.technicien===CURRENT_USER.nom && v.statut==="brouillon");
+        const derniere = VISITES.filter(v=>v.site===s.nom && v.technicien===CURRENT_USER.nom && v.statut!=="brouillon").sort((a,b)=>b.date.localeCompare(a.date))[0];
+        let badge;
+        if(draft) badge = `<span class="badge soumise">Brouillon en cours - ${fmtDate(draft.date)}</span>`;
+        else if(derniere) badge = `<span class="badge ${badgeClass(derniere.statut)}">Dernière maintenance : ${fmtDate(derniere.date)} - ${derniere.statut}</span>`;
+        else badge = `<span class="badge na">Aucune maintenance effectuée</span>`;
+        return `<div class="card clickable" style="cursor:pointer;" onclick="startOrResumeVisite('${s.nom}')">
+          <div class="site-name">${s.nom}</div>
+          <div class="site-meta">${s.eleves} élèves</div>
+          ${badge}
+          <div style="margin-top:10px; font-size:11.5px; font-weight:600; color:var(--rust-dark);">Cliquer ici pour démarrer →</div>
+        </div>`;
+      }).join("")}
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h3>Historique des maintenances préventives effectuées</h3></div>
+      <div class="panel-body"><table>
+        <thead><tr><th>Site maintenu</th><th>Date</th><th>Technicien</th><th>Statut</th><th></th></tr></thead>
+        <tbody>${historique.length===0? `<tr><td colspan="5" style="color:var(--slate-light); text-align:center; padding:24px;">Aucune maintenance encore soumise ou validée.</td></tr>` : pageHist.map(v=>`
+          <tr class="clickable" onclick="openVisite('${v.id}')">
+            <td><b>${v.site}</b></td><td class="mono">${fmtDate(v.date)}</td><td>${v.technicien}</td>
+            <td><span class="badge ${badgeClass(v.statut)}">${v.statut}</span></td>
+            <td style="text-align:right; color:var(--slate-light);">→</td>
+          </tr>`).join("")}</tbody>
+      </table>${renderPager("pgTechHist", historique)}</div>
+    </div>`;
+}
+function blankConstats(){
+  return seedConstats({}).map(c=>({...c, statut:"", echeance:"", remarque:"", devis:"", photos:0, reponses:[]}));
+}
+function startOrResumeVisite(siteName){
+  let v = VISITES.find(v=>v.site===siteName && v.technicien===CURRENT_USER.nom && v.statut==="brouillon");
+  if(!v){
+    v = {
+      id: "v-"+Date.now(),
+      site: siteName,
+      date: TODAY.toISOString().slice(0,10),
+      technicien: CURRENT_USER.nom,
+      statut: "brouillon",
+      constats: blankConstats(),
+      curatif: [],
+      commentaires: [],
+    };
+    VISITES.push(v);
+  }
+  STATE.activeVisiteId = v.id;
+  STATE.screen = "tech-school";
+  render();
+}
+
+/* ---------- TECHNICIEN : choix École > Contrôle visuel / Action ---------- */
+function findItemDef(itemId){
+  for(const cat of CATEGORIES){ const it = cat.items.find(i=>i.id===itemId); if(it) return it; }
+  return null;
+}
+function itemProgress(constat, item){
+  const total = (item.elements||[]).length * (item.criteres||[]).length;
+  const done = (constat && constat.reponses) ? constat.reponses.length : 0;
+  return {done, total};
+}
+function renderTechSchoolChoice(c, top){
+  const v = VISITES.find(v=>v.id===STATE.activeVisiteId);
+  if(!v){ goto("tech-preventif"); return; }
+  top.innerHTML = `<button class="btn ghost sm" onclick="goto('tech-preventif')">← Retour aux écoles</button>`;
+  let doneVisuel=0, totalVisuel=0;
+  v.constats.forEach(cst=>{
+    if(cst.type==="visuel"){
+      const item = findItemDef(cst.itemId);
+      const {done,total} = itemProgress(cst, item);
+      doneVisuel += done; totalVisuel += total;
+    }
+  });
+  const actionItemsCount = v.constats.filter(x=>x.type==="action").length;
+  const actionDone = v.constats.filter(x=>x.type==="action" && x.statut).length;
+  const actionsNonEscaladees = v.constats.filter(x=>x.type==="action" && x.detecte && !x.escalade).length;
+  c.innerHTML = `
+    <div class="panel" style="padding:16px 18px; margin-bottom:16px;">
+      <div class="site-name display" style="font-size:17px;">${v.site}</div>
+      <div class="site-meta mono">Visite du ${fmtDate(v.date)} · ${v.technicien}</div>
+    </div>
+    <div class="grid" style="grid-template-columns:1fr 1fr; gap:16px;">
+      <div class="card clickable" style="cursor:pointer; padding:24px;" onclick="goto('tech-wizard-picker')">
+        <div class="site-name" style="font-size:16px;">🔍 Contrôle visuel</div>
+        <div class="site-meta" style="margin-bottom:12px;">Inspection point par point de la checklist</div>
+        <div class="stat-row"><div class="stat"><div class="n">${doneVisuel}/${totalVisuel}</div><div class="l">Questions répondues</div></div></div>
+      </div>
+      <div class="card clickable" style="cursor:pointer; padding:24px;" onclick="goto('tech-action')">
+        <div class="site-name" style="font-size:16px;">🛠 Action</div>
+        <div class="site-meta" style="margin-bottom:12px;">Tâches de maintenance et interventions curatives (MC)</div>
+        <div class="stat-row"><div class="stat"><div class="n">${actionDone}/${actionItemsCount} + ${v.curatif.length} MC</div><div class="l">Traitées</div></div></div>
+        ${actionsNonEscaladees>0 ? `<span class="badge action" style="margin-top:8px; display:inline-block;">${actionsNonEscaladees} anomalie(s) signalée(s) à trancher</span>` : ''}
+      </div>
+    </div>
+    ${v.statut==="brouillon" ? `<div class="panel" style="margin-top:16px; padding:14px 18px; display:flex; justify-content:space-between; align-items:center;">
+      <span class="hint" style="margin:0;">Quand toutes les sections sont à jour, soumettez la visite pour contrôle par l'exploitation.</span>
+      <button class="btn rust sm" onclick="submitVisite('${v.id}')">Soumettre la visite</button>
+    </div>` : `<div class="panel" style="margin-top:16px; padding:14px 18px;"><span class="badge ${badgeClass(v.statut)}">${v.statut}</span></div>`}`;
+}
+
+/* ---------- TECHNICIEN : sélection du point de contrôle visuel ---------- */
+function renderWizardPicker(c, top){
+  const v = VISITES.find(v=>v.id===STATE.activeVisiteId);
+  top.innerHTML = `<button class="btn ghost sm" onclick="goto('tech-school')">← Retour</button>`;
+  c.innerHTML = `
+    <div class="hint" style="margin-top:0;">${v.site} - choisissez un point de contrôle. Chaque élément est passé en revue un par un, critère après critère.</div>
+    <div class="carnet"><div class="carnet-inner">
+      ${CATEGORIES.map(cat=>{
+        const visuelItems = cat.items.filter(it=>it.type==="visuel");
+        if(visuelItems.length===0) return "";
+        return `<div class="cat-block">
+          <div class="cat-title"><span class="num">${cat.id}</span>${cat.nom}</div>
+          ${visuelItems.map(item=>{
+            const constat = v.constats.find(x=>x.itemId===item.id);
+            const {done,total} = itemProgress(constat, item);
+            const complete = total>0 && done>=total;
+            const cls = complete ? "bon" : (done>0 ? "vigilance" : "na");
+            const label = complete ? "Terminé" : (done>0 ? done+"/"+total : "À faire");
+            return `<div class="item-row clickable" style="cursor:pointer;" onclick="launchWizardItem('${item.id}')">
+              <div class="item-txt" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0;">
+                <span>${item.texte}</span>
+                <span class="badge ${cls}">${label}</span>
+              </div>
+            </div>`;
+          }).join("")}
+        </div>`;
+      }).join("")}
+    </div></div>`;
+}
+function launchWizardItem(itemId){
+  const v = VISITES.find(v=>v.id===STATE.activeVisiteId);
+  const constat = v.constats.find(x=>x.itemId===itemId);
+  const item = findItemDef(itemId);
+  const nCrit = (item.criteres||[]).length;
+  const idx = (constat.reponses||[]).length;
+  STATE.wizItemId = itemId;
+  STATE.wizElIdx = nCrit>0 ? Math.floor(idx/nCrit) : 0;
+  STATE.wizCritIdx = nCrit>0 ? idx % nCrit : 0;
+  STATE.wizShowForm = false;
+  STATE.wizNonPanel = false;
+  STATE.wizTempPhotos = [];
+  STATE.screen = "tech-wizard-item";
+  render();
+}
+
+/* ---------- TECHNICIEN : parcours guidé question par question ---------- */
+function escalateActionToCuratif(visiteId, constatId){
+  const v = VISITES.find(v=>v.id===visiteId);
+  const constat = v.constats.find(x=>x.id===constatId);
+  if(!constat || constat.escalade) return;
+  if(!v.curatif) v.curatif = [];
+  const curId = "mc-esc-"+constatId;
+  v.curatif.push({
+    id: curId, auto:true, sourceItemId: constat.itemId||null,
+    texte: constat.texte, statut: "ACTION", echeance: "NA", devis: "A faire",
+    remarque: constat.remarque||"", montant: 0,
+    photos: (constat.photosData||[]).length, photosData: (constat.photosData||[]).slice(),
+  });
+  constat.escalade = true; constat.curatifId = curId;
+  render();
+}
+
+function recomputeVisuelAggregate(constat){
+  const reponses = constat.reponses || [];
+  const flaggedOui = reponses.filter(r=>r.reponse==="oui");
+  const flaggedSurveil = reponses.filter(r=>r.reponse==="a_surveiller");
+  if(reponses.length===0) constat.statut = "";
+  else if(flaggedOui.length>0) constat.statut = "ACTION";
+  else if(flaggedSurveil.length>0) constat.statut = "A SURVEILLER";
+  else constat.statut = "RAS";
+  const flagged = flaggedOui.concat(flaggedSurveil);
+  constat.remarque = flagged.map(r=>`${r.element} - ${r.critere}${r.remarque?': '+r.remarque:''}`).join(" | ");
+  constat.photosData = flagged.flatMap(r=>r.photosData||[]);
+  constat.photos = constat.photosData.length;
+}
+function renderWizardItem(c, top){
+  const v = VISITES.find(v=>v.id===STATE.activeVisiteId);
+  const item = findItemDef(STATE.wizItemId);
+  const constat = v.constats.find(x=>x.itemId===item.id);
+  top.innerHTML = `<button class="btn ghost sm" onclick="goto('tech-wizard-picker')">← Liste des points de contrôle</button>`;
+
+  const elements = item.elements||[];
+  const criteres = item.criteres||[];
+  const totalQuestions = elements.length*criteres.length;
+  const answeredCount = (constat.reponses||[]).length;
+
+  if(totalQuestions===0 || answeredCount>=totalQuestions){
+    const nbAnomalies = (constat.reponses||[]).filter(r=>r.reponse==="oui").length;
+    const nbSurveiller = (constat.reponses||[]).filter(r=>r.reponse==="a_surveiller").length;
+    const resumeTxt = nbAnomalies>0 ? nbAnomalies+' anomalie(s) relevée(s)'+(nbSurveiller>0?' - '+nbSurveiller+' point(s) à surveiller':'')
+      : (nbSurveiller>0 ? nbSurveiller+' point(s) à surveiller' : 'aucune anomalie relevée (RAS)');
+    c.innerHTML = `
+      <div class="panel" style="max-width:600px; margin:0 auto; padding:30px; text-align:center;">
+        <div class="stamp" style="transform:none; display:inline-block; margin-bottom:16px;">Point de contrôle terminé</div>
+        <h2 style="margin-bottom:8px;">${item.texte}</h2>
+        <p class="hint" style="margin:0 0 20px;">${answeredCount} réponse(s) enregistrée(s) - ${resumeTxt}.</p>
+        <div style="display:flex; gap:10px; justify-content:center;">
+          <button class="btn ghost sm" onclick="goto('tech-wizard-picker')">Retour à la liste</button>
+          <button class="btn rust sm" onclick="restartWizardItem('${item.id}')">Recommencer ce point</button>
+        </div>
+      </div>`;
+    return;
+  }
+
+  const el = elements[STATE.wizElIdx];
+  const crit = criteres[STATE.wizCritIdx];
+  const qIndex = STATE.wizElIdx*criteres.length + STATE.wizCritIdx + 1;
+
+  if(STATE.wizShowForm){
+    const isSurveil = STATE.wizFormMode === "surveiller";
+    c.innerHTML = `
+      <div class="panel" style="max-width:600px; margin:0 auto; padding:24px;">
+        <div class="hint" style="margin-top:0;">Question ${qIndex} / ${totalQuestions} - ${item.texte}</div>
+        <div style="font-family:'Archivo Expanded',sans-serif; font-size:13.5px; color:var(--ink); font-weight:700; text-transform:uppercase; letter-spacing:.05em; margin-bottom:4px;">${el.nom}</div>
+        <div style="font-family:'IBM Plex Sans',sans-serif; font-weight:400; font-size:16px; color:var(--ink); margin-bottom:6px;">${crit} ?</div>
+        <span class="badge ${isSurveil?'vigilance':'action'}" style="margin-bottom:14px; display:inline-block;">${isSurveil?'À surveiller':'Oui - anomalie'}</span>
+        <label class="login-label">Remarque</label>
+        <textarea id="wizRemarque" rows="3" style="width:100%; margin-bottom:12px;" placeholder="Décrivez ce que vous observez…"></textarea>
+        <div id="wizPhotoZone"></div>
+        ${isSurveil ? '' : `
+        <label class="login-label" style="margin-top:16px;">Comment traiter ce constat ?</label>
+        <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:6px;">
+          <label class="wiz-choice">
+            <input type="radio" name="wizChoice" value="curatif" checked>
+            <div><b>Maintenance curative requise</b><div class="site-meta" style="margin-top:2px;">Envoyée directement en maintenance curative - statut en attente, devis à faire</div></div>
+          </label>
+          <label class="wiz-choice">
+            <input type="radio" name="wizChoice" value="action">
+            <div><b>Action de maintenance préventive</b><div class="site-meta" style="margin-top:2px;">Ajoutée au suivi des actions de cette visite</div></div>
+          </label>
+        </div>`}
+        <div style="display:flex; gap:10px; margin-top:14px;">
+          <button class="btn ghost sm" onclick="cancelWizForm()">Annuler</button>
+          <button class="btn rust sm" onclick="submitWizAnswer('${isSurveil?'a_surveiller':'oui'}')">Valider et continuer</button>
+        </div>
+      </div>`;
+    renderWizPhotoZone();
+    return;
+  }
+
+  if(STATE.wizNonPanel){
+    c.innerHTML = `
+      <div class="panel" style="max-width:600px; margin:0 auto; padding:30px; text-align:center;">
+        <div class="hint" style="margin-top:0;">Question ${qIndex} / ${totalQuestions} - ${item.texte}</div>
+        <div style="font-family:'Archivo Expanded',sans-serif; font-size:13.5px; color:var(--ink); font-weight:700; text-transform:uppercase; letter-spacing:.05em; margin-bottom:6px;">${el.nom}</div>
+        <div style="font-size:14px; color:var(--slate); margin-bottom:20px;">${crit} ?</div>
+        <div class="hint" style="margin-bottom:12px;">Précisez le suivi de ce point</div>
+        <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+          <button class="btn ghost" style="min-width:100px;" onclick="submitWizAnswer('ras')">RAS</button>
+          <button class="btn ghost" style="min-width:100px; border-color:var(--amber); color:#8a5f13;" onclick="showWizSurveilForm()">À surveiller</button>
+          <button class="btn ghost" style="min-width:100px;" onclick="submitWizAnswer('na')">NA</button>
+        </div>
+        <button class="btn ghost sm" style="margin-top:20px;" onclick="cancelWizNonPanel()">← Retour</button>
+      </div>`;
+    return;
+  }
+
+  c.innerHTML = `
+    <div class="panel" style="max-width:600px; margin:0 auto; padding:30px; text-align:center;">
+      <div class="hint" style="margin-top:0;">Question ${qIndex} / ${totalQuestions} - ${item.texte}</div>
+      <div class="progress-wrap" style="margin-bottom:22px;"><div class="progress-bar"><div style="width:${Math.round((qIndex-1)/totalQuestions*100)}%"></div></div></div>
+      <div style="font-family:'Archivo Expanded',sans-serif; font-size:13.5px; color:var(--ink); font-weight:700; text-transform:uppercase; letter-spacing:.05em; margin-bottom:10px;">${el.nom}</div>
+      <div style="font-family:'IBM Plex Sans',sans-serif; font-weight:400; font-size:19px; color:var(--ink); margin-bottom:28px;">${crit} ?</div>
+      <div style="display:flex; gap:14px; justify-content:center;">
+        <button class="btn ghost" style="min-width:110px;" onclick="showWizNonPanel()">Non</button>
+        <button class="btn rust" style="min-width:110px;" onclick="showWizForm()">Oui</button>
+      </div>
+    </div>`;
+}
+function showWizNonPanel(){ STATE.wizNonPanel = true; render(); }
+function cancelWizNonPanel(){ STATE.wizNonPanel = false; render(); }
+function showWizSurveilForm(){ STATE.wizNonPanel = false; STATE.wizShowForm = true; STATE.wizFormMode = "surveiller"; STATE.wizTempPhotos = []; render(); }
+function showWizForm(){ STATE.wizShowForm = true; STATE.wizFormMode = "oui"; STATE.wizTempPhotos = []; render(); }
+function cancelWizForm(){ STATE.wizShowForm = false; STATE.wizNonPanel = false; render(); }
+function renderWizPhotoZone(){
+  const zone = document.getElementById("wizPhotoZone");
+  if(!zone) return;
+  const photos = STATE.wizTempPhotos||[];
+  zone.innerHTML = `
+    <input type="file" accept="image/*" multiple id="wizPhotoInput" style="display:none;" onchange="handleWizPhotoUpload(this.files)">
+    <button class="photo-chip" type="button" onclick="document.getElementById('wizPhotoInput').click()">📷 ${photos.length} photo(s) - ajouter</button>
+    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;">
+      ${photos.map((src,i)=>`<div style="position:relative;"><img src="${src}" style="width:44px;height:44px;object-fit:cover;border-radius:5px;border:1px solid var(--panel-line);cursor:zoom-in;" onclick="openLightbox(this.src)"><button type="button" onclick="event.stopPropagation(); removeWizPhoto(${i})" style="position:absolute; top:-6px; right:-6px; background:var(--rust); color:#fff; border:none; border-radius:50%; width:16px; height:16px; font-size:10px; line-height:1; cursor:pointer; padding:0;">×</button></div>`).join("")}
+    </div>`;
+}
+function handleWizPhotoUpload(fileList){
+  if(!STATE.wizTempPhotos) STATE.wizTempPhotos=[];
+  const files = Array.from(fileList).slice(0, Math.max(0,5-STATE.wizTempPhotos.length));
+  files.forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = e=>{
+      const img = new Image();
+      img.onload = ()=>{
+        const maxW=200; const scale=Math.min(1,maxW/img.width);
+        const canvas=document.createElement("canvas");
+        canvas.width=Math.round(img.width*scale); canvas.height=Math.round(img.height*scale);
+        canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);
+        STATE.wizTempPhotos.push(canvas.toDataURL("image/jpeg",0.6));
+        renderWizPhotoZone();
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+function categoryIdOfItem(itemId){
+  for(const cat of CATEGORIES){ if(cat.items.some(i=>i.id===itemId)) return cat.id; }
+  return null;
+}
+function removeWizPhoto(idx){ STATE.wizTempPhotos.splice(idx,1); renderWizPhotoZone(); }
+function submitWizAnswer(type){
+  // type : "oui" | "ras" | "a_surveiller" | "na"
+  const v = VISITES.find(v=>v.id===STATE.activeVisiteId);
+  const item = findItemDef(STATE.wizItemId);
+  const constat = v.constats.find(x=>x.itemId===item.id);
+  const el = item.elements[STATE.wizElIdx];
+  const crit = item.criteres[STATE.wizCritIdx];
+  const needsForm = (type==="oui" || type==="a_surveiller");
+  const remarqueInp = needsForm ? document.getElementById("wizRemarque") : null;
+  const remarqueVal = needsForm && remarqueInp ? remarqueInp.value.trim() : "";
+  const photosVal = needsForm ? (STATE.wizTempPhotos||[]).slice() : [];
+  let choice = "curatif";
+  if(type==="oui"){
+    const checked = document.querySelector('input[name="wizChoice"]:checked');
+    if(checked) choice = checked.value;
+  }
+  if(!constat.reponses) constat.reponses = [];
+  constat.reponses.push({ element: el.nom, critere: crit, reponse: type, remarque: remarqueVal, photosData: photosVal, destination: type==="oui"?choice:null });
+  recomputeVisuelAggregate(constat);
+
+  if(type==="oui"){
+    const label = `${crit} - ${el.nom}${remarqueVal ? ' - '+remarqueVal : ''}`;
+    const uid = STATE.wizItemId+"-"+el.id+"-"+STATE.wizCritIdx+"-"+Date.now();
+    if(choice === "curatif"){
+      // Maintenance curative requise -> envoyée directement, statut en attente, devis à faire
+      if(!v.curatif) v.curatif = [];
+      v.curatif.push({
+        id: "mc-visuel-"+uid, auto:true, sourceItemId:item.id,
+        texte: label, statut:"ACTION", echeance:"NA", devis:"A faire", remarque:"", montant:0,
+        photos: photosVal.length, photosData: photosVal.slice(),
+      });
+    } else {
+      // Action de maintenance préventive -> ligne dans les Actions, avec le site de départ conservé
+      v.constats.push({
+        id: "c-visuel-"+uid, catId: categoryIdOfItem(item.id), itemId: null, type: "action",
+        texte: label, statut: "ACTION", echeance: "NA", remarque: "", devis: "Non requis", montant: 0,
+        photos: photosVal.length, photosData: photosVal.slice(), reponses: [],
+        detecte: true, sourceItemId: item.id, site: v.site, escalade: false, curatifId: null,
+      });
+    }
+  }
+  // "a_surveiller" reste un simple point de vigilance consigné sur le point de contrôle -
+  // il ne génère ni action ni intervention curative automatiquement.
+
+  STATE.wizShowForm = false;
+  STATE.wizNonPanel = false;
+  STATE.wizTempPhotos = [];
+  STATE.wizCritIdx++;
+  if(STATE.wizCritIdx >= item.criteres.length){ STATE.wizCritIdx=0; STATE.wizElIdx++; }
+  render();
+}
+function restartWizardItem(itemId){
+  const v = VISITES.find(v=>v.id===STATE.activeVisiteId);
+  const constat = v.constats.find(x=>x.itemId===itemId);
+  constat.reponses = [];
+  recomputeVisuelAggregate(constat);
+  // retire les actions détectées liées à ce point (et leur éventuelle escalade en curatif)
+  v.constats.filter(x=>x.detecte && x.sourceItemId===itemId).forEach(a=>{
+    if(a.curatifId) v.curatif = v.curatif.filter(x=>x.id!==a.curatifId);
+  });
+  v.constats = v.constats.filter(x=>!(x.detecte && x.sourceItemId===itemId));
+  // retire les interventions curatives envoyées directement depuis ce point
+  v.curatif = v.curatif.filter(x=>!(x.auto && x.sourceItemId===itemId));
+  STATE.wizElIdx=0; STATE.wizCritIdx=0; STATE.wizShowForm=false;
+  render();
+}
+
+/* ---------- TECHNICIEN : onglet Action (items d'action + curatif MC) ---------- */
+function renderTechAction(c, top){
+  const v = VISITES.find(v=>v.id===STATE.activeVisiteId);
+  const editable = v.statut==="brouillon" && CURRENT_USER && v.technicien===CURRENT_USER.nom;
+  top.innerHTML = `<button class="btn ghost sm" onclick="goto('tech-school')">← Retour</button>${editable ? `<button class="btn rust sm" onclick="submitVisite('${v.id}')" style="margin-left:8px;">Soumettre la visite</button>` : ''}`;
+
+  const actionConstats = v.constats.filter(x=>x.type==="action").slice().reverse();
+
+  const rowsHtml = (rows) => rows.map(r=>`
+    <div class="user-row row-click" style="cursor:pointer;" onclick="${r.onclick}">
+      <div class="ur-name" style="flex:1; min-width:0;">${r.label}</div>
+      <div class="ur-email mono" style="min-width:90px;">${fmtDate(r.date)}</div>
+      <span class="badge ${r.cls}">${r.statutTxt}</span>
+      <span style="color:var(--slate-light); margin-left:4px;">→</span>
+    </div>`).join("");
+
+  c.innerHTML = `
+    <div class="panel" style="padding:16px 18px; margin-bottom:16px;">
+      <div class="site-name display" style="font-size:17px;">${v.site}</div>
+      <div class="site-meta mono">Visite du ${fmtDate(v.date)} · ${v.technicien}</div>
+    </div>
+
+    <div class="panel" style="margin-bottom:16px;">
+      <div class="panel-head"><h3>Actions de maintenance préventive</h3></div>
+      <div class="panel-body">
+        ${actionConstats.length===0 ? `<div class="empty" style="padding:22px;">Aucune action prévue.</div>` :
+          rowsHtml(actionConstats.map(cst=>({
+            label: cst.texte, date: v.date,
+            statutTxt: cst.statut || "À faire", cls: badgeClass(cst.statut||""),
+            onclick: `goToActionDetail('action','${cst.id}')`,
+          })))}
+      </div>
+    </div>`;
+}
+
+/* ---------- TECHNICIEN : détail d'une ligne d'action (avec grand format photo) ---------- */
+function renderLargePhotos(photosData){
+  if(!photosData || photosData.length===0) return `<div class="hint" style="margin:12px 0 0;">Aucune photo jointe.</div>`;
+  return `<div style="display:flex; gap:10px; flex-wrap:wrap; margin:14px 0;">
+    ${photosData.map(src=>`<img src="${src}" style="width:230px; height:230px; object-fit:cover; border-radius:9px; border:1px solid var(--panel-line); cursor:zoom-in;" onclick="openLightbox(this.src)">`).join("")}
+  </div>`;
+}
+function goToActionDetail(type, id){
+  STATE.actionDetailType = type;
+  STATE.actionDetailId = id;
+  STATE.screen = "tech-action-detail";
+  render();
+}
+function renderTechActionDetail(c, top){
+  const v = VISITES.find(v=>v.id===STATE.activeVisiteId);
+  const editable = v.statut==="brouillon" && CURRENT_USER && v.technicien===CURRENT_USER.nom;
+  top.innerHTML = `<button class="btn ghost sm" onclick="goto('tech-action')">← Retour aux actions</button>`;
+  const type = STATE.actionDetailType, id = STATE.actionDetailId;
+
+  if(type==="action"){
+    const constat = v.constats.find(x=>x.id===id);
+    if(!constat){ goto("tech-action"); return; }
+    c.innerHTML = `
+      <div class="panel" style="max-width:640px; margin:0 auto; padding:26px;">
+        <h2 style="margin-bottom:16px;">${constat.texte}</h2>
+        ${renderItemRow(constat, editable, true)}
+        ${renderLargePhotos(constat.photosData)}
+        <div style="margin-top:20px; padding-top:16px; border-top:1px dashed var(--panel-line);">
+          ${constat.escalade
+            ? `<span class="badge bon" style="font-size:12px; padding:8px 14px;">✓ Déjà envoyée en maintenance curative</span>`
+            : `<button class="btn rust" onclick="escalateActionToCuratif('${v.id}','${constat.id}')">Envoyer en maintenance curative</button>`}
+        </div>
+      </div>`;
+    return;
+  }
+
+  const item = v.curatif.find(x=>x.id===id);
+  if(!item){ goto("tech-action"); return; }
+  c.innerHTML = `
+    <div class="panel" style="max-width:640px; margin:0 auto; padding:26px;">
+      <h2 style="margin-bottom:16px;">${item.texte}</h2>
+      ${renderCuratifRow(v.id, item, editable)}
+      ${renderLargePhotos(item.photosData)}
+    </div>`;
+}
+
+/* ---------- TECHNICIEN : Maintenance curative (liste des sites puis détail) ---------- */
+function curatifForSite(siteName){
+  const rows = [];
+  VISITES.filter(v=>v.site===siteName && v.technicien===CURRENT_USER.nom).forEach(v=>{
+    v.curatif.forEach(item=>rows.push({item, visiteId:v.id, visiteDate:v.date, visiteStatut:v.statut}));
+  });
+  return rows.sort((a,b)=>b.visiteDate.localeCompare(a.visiteDate));
+}
+function renderTechCuratifHub(c, top){
+  top.innerHTML = "";
+  const mySites = CURRENT_USER ? SITES.filter(s=>s.technicien===CURRENT_USER.nom) : [];
+  if(mySites.length===0){
+    c.innerHTML = `<div class="panel"><div class="empty"><div class="big">Aucun site assigné</div></div></div>`;
+    return;
+  }
+  c.innerHTML = `
+    <div class="hint" style="margin-top:0;">Interventions curatives (MC) par site - ponctuelles, hors checklist périodique. Cliquez sur un site pour voir le détail des travaux à faire.</div>
+    <div class="grid cards">
+      ${mySites.map(s=>{
+        const rows = curatifForSite(s.nom);
+        const ouverts = rows.filter(r=>["ACTION","EN COURS","A SURVEILLER"].includes(r.item.statut)).length;
+        const derniere = rows[0];
+        return `<div class="card clickable" style="cursor:pointer;" onclick="goToTechCuratifSite('${s.nom}')">
+          <div class="site-name">${s.nom}</div>
+          <div class="site-meta">${derniere ? "Dernière intervention relevée : "+fmtDate(derniere.visiteDate) : "Aucune intervention relevée"}</div>
+          <span class="badge ${ouverts>0?'action':'bon'}">${ouverts>0 ? ouverts+" intervention(s) à faire" : "Rien en attente"}</span>
+        </div>`;
+      }).join("")}
+    </div>`;
+}
+function goToTechCuratifSite(siteName){ STATE.curatifSite = siteName; STATE.screen = "tech-curatif-site"; render(); }
+function renderTechCuratifSite(c, top){
+  const siteName = STATE.curatifSite;
+  top.innerHTML = `<button class="btn ghost sm" onclick="goto('tech-curatif')">← Retour aux sites</button>`;
+  const rows = curatifForSite(siteName);
+  c.innerHTML = `
+    <div class="panel" style="padding:16px 18px; margin-bottom:16px;">
+      <div class="site-name display" style="font-size:17px;">${siteName}</div>
+      <div class="site-meta mono">Maintenance curative - détail des interventions</div>
+    </div>
+    <div class="panel">
+      <div class="panel-body">
+        ${rows.length===0 ? `<div class="empty" style="padding:22px;">Aucune intervention curative relevée sur ce site.</div>` :
+          rows.map(r=>{
+            const badgeTxt = (r.item.devis && r.item.devis!=="Non requis") ? r.item.devis : r.item.statut;
+            const cls = badgeClass(r.item.devis==="Validé MC" ? "FAIT" : (r.item.devis && r.item.devis!=="Non requis" ? "ACTION" : r.item.statut));
+            return `<div class="user-row row-click" style="cursor:pointer;" onclick="goToCuratifSiteDetail('${r.visiteId}','${r.item.id}')">
+              <div class="ur-name" style="flex:1; min-width:0;">${r.item.texte}</div>
+              <div class="ur-email mono" style="min-width:90px;">${fmtDate(r.visiteDate)}</div>
+              <span class="badge ${cls}">${badgeTxt}</span>
+              <span style="color:var(--slate-light); margin-left:4px;">→</span>
+            </div>`;
+          }).join("")}
+      </div>
+    </div>`;
+}
+function goToCuratifSiteDetail(visiteId, itemId){
+  STATE.curatifDetailVisiteId = visiteId;
+  STATE.curatifDetailItemId = itemId;
+  STATE.screen = "tech-curatif-detail";
+  render();
+}
+function renderDevisFileControl(item){
+  return `
+    ${item.devisFile ? `
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+        <span class="photo-chip">📎 ${item.devisFile.name}</span>
+        <button class="icon-btn" title="Retirer" type="button" onclick="removeDevisFile('${item.id}')">🗑</button>
+      </div>` : ''}
+    <input type="file" accept=".pdf,image/*" id="devisFileInput-${item.id}" style="display:none;" onchange="handleDevisFileUpload('${item.id}', this.files)">
+    <button class="btn ghost sm" type="button" onclick="document.getElementById('devisFileInput-${item.id}').click()">${item.devisFile ? 'Remplacer le devis joint' : '+ Joindre un devis'}</button>`;
+}
+function handleDevisFileUpload(itemId, fileList){
+  const item = findConstat(itemId);
+  const file = fileList[0];
+  if(!item || !file) return;
+  const reader = new FileReader();
+  reader.onload = e=>{
+    item.devisFile = { name: file.name, dataUrl: e.target.result };
+    // le fait de joindre un devis fait automatiquement passer son statut en "Attente validation",
+    // sauf s'il a déjà été validé par l'administration (Validé MC), qui reste seule à pouvoir le modifier ensuite.
+    if(item.devis !== "Validé MC"){
+      item.devis = "Attente validation";
+      const v = VISITES.find(v=>v.curatif && v.curatif.includes(item));
+      if(v){
+        const nom = CURRENT_USER ? CURRENT_USER.nom : "Technicien";
+        v.commentaires.push({qui:"tech", nom, texte:`Un devis a été envoyé, dans le cadre de cette maintenance (« ${item.texte} »).`, date:"maintenant"});
+      }
+    }
+    render();
+  };
+  reader.readAsDataURL(file);
+}
+function removeDevisFile(itemId){ const item = findConstat(itemId); delete item.devisFile; render(); }
+
+function renderAfterPhotoControl(item){
+  if(!item.photosApres) item.photosApres = [];
+  const thumbs = item.photosApres.length ? `<div style="display:flex; gap:8px; flex-wrap:wrap; margin:10px 0;">
+    ${item.photosApres.map((src,i)=>`<div style="position:relative;"><img src="${src}" style="width:90px;height:90px;object-fit:cover;border-radius:8px;border:1px solid var(--panel-line);cursor:zoom-in;" onclick="openLightbox(this.src)"><button type="button" onclick="event.stopPropagation(); removeAfterPhoto('${item.id}',${i})" style="position:absolute; top:-6px; right:-6px; background:var(--rust); color:#fff; border:none; border-radius:50%; width:18px; height:18px; font-size:11px; line-height:1; cursor:pointer; padding:0;">×</button></div>`).join("")}
+  </div>` : '';
+  return `
+    <input type="file" accept="image/*" multiple id="afterPhotoInput-${item.id}" style="display:none;" onchange="handleAfterPhotoUpload('${item.id}', this.files)">
+    <button class="photo-chip" type="button" onclick="document.getElementById('afterPhotoInput-${item.id}').click()">📷 ${item.photosApres.length} photo(s) après travaux - ajouter</button>
+    ${thumbs}`;
+}
+function handleAfterPhotoUpload(itemId, fileList){
+  const item = findConstat(itemId);
+  if(!item) return;
+  if(!item.photosApres) item.photosApres=[];
+  const files = Array.from(fileList).slice(0, Math.max(0, 5-item.photosApres.length));
+  const v = VISITES.find(v=>v.curatif && v.curatif.includes(item));
+  files.forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = e=>{
+      const img = new Image();
+      img.onload = ()=>{
+        const maxW=200; const scale=Math.min(1,maxW/img.width);
+        const canvas=document.createElement("canvas");
+        canvas.width=Math.round(img.width*scale); canvas.height=Math.round(img.height*scale);
+        canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);
+        item.photosApres.push(canvas.toDataURL("image/jpeg",0.6));
+        if(v){
+          const nom = CURRENT_USER ? CURRENT_USER.nom : "Technicien";
+          v.commentaires.push({qui:"tech", nom, texte:`Photo après travaux ajoutée - « ${item.texte} ».`, date:"maintenant"});
+        }
+        render();
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+function removeAfterPhoto(itemId, idx){ const item = findConstat(itemId); item.photosApres.splice(idx,1); render(); }
+
+function renderTechCuratifDetail(c, top){
+  const v = VISITES.find(v=>v.id===STATE.curatifDetailVisiteId);
+  const item = v ? v.curatif.find(x=>x.id===STATE.curatifDetailItemId) : null;
+  if(!v || !item){ goto("tech-curatif"); return; }
+  top.innerHTML = `<button class="btn ghost sm" onclick="STATE.screen='tech-curatif-site'; render();">← Retour</button>`;
+  c.innerHTML = `
+    <div class="panel" style="max-width:640px; margin:0 auto; padding:26px;">
+      <div class="hint" style="margin-top:0;">${v.site} · Visite du ${fmtDate(v.date)}</div>
+      <h2 style="margin-bottom:18px;">${item.texte}</h2>
+      ${renderCuratifRow(v.id, item, true, true, true, true)}
+
+      <div class="hint" style="margin-top:22px; margin-bottom:6px;">Document du devis</div>
+      ${renderDevisFileControl(item)}
+
+      <div class="hint" style="margin-top:22px; margin-bottom:6px;">Photos avant travaux (jointes lors de l'envoi en maintenance curative)</div>
+      ${renderLargePhotos(item.photosData)}
+
+      <div class="hint" style="margin-top:22px; margin-bottom:6px;">Photos après travaux</div>
+      ${renderAfterPhotoControl(item)}
+
+      <div style="margin-top:22px; padding-top:18px; border-top:1px dashed var(--panel-line); display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        ${item.cloture
+          ? `<span class="badge bon" style="font-size:12px; padding:8px 14px;">✓ Intervention clôturée par l'administration</span>`
+          : item.statut==="FAIT"
+            ? `<span class="badge soumise" style="font-size:12px; padding:8px 14px;">En attente de clôture par l'administration</span>`
+            : item.devis==="Validé MC"
+              ? `<button class="btn verdigris" onclick="techMarkCuratifDone('${v.id}','${item.id}')">Marquer la maintenance comme faite</button>`
+              : `<span class="hint" style="margin:0; font-size:11.5px;">Le devis doit être validé par l'administration avant de pouvoir clôturer les travaux.</span>`}
+      </div>
+      <div style="margin-top:10px;">
+        ${item.soumisPourRevue
+          ? `<span class="badge bon" style="font-size:12px; padding:8px 14px;">✓ Soumis pour revue à l'administration</span>`
+          : `<button class="btn rust" onclick="submitCuratifForReview('${v.id}','${item.id}')">Soumettre pour revue</button>`}
+      </div>
+    </div>
+
+    <div class="panel" style="max-width:640px; margin:16px auto 0;">
+      ${renderThreadPanel(v, false)}
+    </div>`;
+  bindThreadForm(v);
+}
+function techMarkCuratifDone(visiteId, itemId){
+  const v = VISITES.find(v=>v.id===visiteId);
+  const item = v.curatif.find(x=>x.id===itemId);
+  if(!item) return;
+  item.statut = "FAIT";
+  const nom = CURRENT_USER ? CURRENT_USER.nom : "Technicien";
+  v.commentaires.push({qui:"tech", nom, texte:`La maintenance curative a été faite - « ${item.texte} ».`, date:"maintenant"});
+  render();
+}
+function submitCuratifForReview(visiteId, itemId){
+  const v = VISITES.find(v=>v.id===visiteId);
+  const item = v.curatif.find(x=>x.id===itemId);
+  if(!item) return;
+  item.soumisPourRevue = true;
+  const nom = CURRENT_USER ? CURRENT_USER.nom : "Technicien";
+  v.commentaires.push({qui:"tech", nom, texte:`Mise à jour soumise pour revue sur l'intervention « ${item.texte} » (${v.site}).`, date:"maintenant"});
+  if(typeof ACTIVITY !== "undefined" && ACTIVITY) ACTIVITY.unshift({type:"soumission", texte:`${nom} a soumis une mise à jour sur « ${item.texte} » - ${v.site}`, date:"maintenant"});
+  render();
+}
+function renderReponsesBreakdown(reponses){
+  const flagged = reponses.filter(r=>r.reponse==="oui"||r.reponse==="a_surveiller");
+  const clean = reponses.filter(r=>r.reponse==="ras"||r.reponse==="na");
+  let html = `<div style="margin-top:8px;">`;
+  if(flagged.length){
+    html += flagged.map(r=>`
+      <div style="display:flex; gap:9px; align-items:flex-start; padding:7px 0; border-top:1px dashed var(--panel-line);">
+        <span class="badge ${r.reponse==='oui'?'action':'vigilance'}" style="flex:none; margin-top:1px;">${r.reponse==='oui'?'Anomalie':'À surveiller'}</span>
+        <div style="flex:1; font-size:12.5px;">
+          <b>${r.element}</b> - ${r.critere}${r.remarque?' : '+r.remarque:''}
+          ${r.photosData && r.photosData.length ? `<div style="display:flex; gap:5px; margin-top:6px; flex-wrap:wrap;">${r.photosData.map(src=>`<img src="${src}" style="width:40px;height:40px;object-fit:cover;border-radius:5px;border:1px solid var(--panel-line);cursor:zoom-in;" onclick="openLightbox(this.src)">`).join("")}</div>` : ''}
+        </div>
+      </div>`).join("");
+  }
+  if(clean.length){
+    html += `<div class="hint" style="margin:6px 0 0; font-size:11px;">${clean.length} contrôle(s) sans anomalie (RAS/NA).</div>`;
+  }
+  html += `</div>`;
+  return html;
+}
+function renderReadOnlyConstatRow(constat){
+  const isVisuel = constat.type === "visuel";
+  return `
+  <div class="item-row">
+    <div class="item-txt" style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:0;">
+      <span>${constat.texte}</span>
+      <span class="badge ${badgeClass(constat.statut)}" style="flex:none;">${constat.statut || 'Non renseigné'}</span>
+    </div>
+    ${isVisuel
+      ? (constat.reponses && constat.reponses.length ? renderReponsesBreakdown(constat.reponses) : `<div class="hint" style="margin:6px 0 0;">Aucune réponse enregistrée.</div>`)
+      : `<div style="margin-top:6px; font-size:12px; color:var(--slate);">
+          ${constat.echeance ? `Échéance : <b>${constat.echeance}</b> · ` : ''}
+          ${constat.devis && constat.devis!=="Non requis" ? `Devis : <span class="badge encours">${constat.devis}</span> · ` : ''}
+          ${constat.remarque || ''}
+        </div>
+        ${constat.photosData && constat.photosData.length ? `<div style="display:flex; gap:5px; margin-top:6px; flex-wrap:wrap;">${constat.photosData.map(src=>`<img src="${src}" style="width:40px;height:40px;object-fit:cover;border-radius:5px;border:1px solid var(--panel-line);cursor:zoom-in;" onclick="openLightbox(this.src)">`).join("")}</div>` : ''}`
+    }
+  </div>`;
+}
+function renderCarnet(c, v, editable){
+  const all = v.constats;
+  const visuelItems = all.filter(x=>x.type==="visuel");
+  const actionItems = all.filter(x=>x.type==="action");
+  const done = all.filter(x=>x.statut).length;
+  const pct = Math.round(done/all.length*100);
+  c.innerHTML = `
+    <div class="grid" style="grid-template-columns:1fr; gap:16px; max-width:760px;">
+      <div class="panel" style="padding:16px 18px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:20px; flex-wrap:wrap;">
+          <div><div class="site-name display" style="font-size:17px;">${v.site}</div>
+            <div class="site-meta mono">Visite du ${fmtDate(v.date)} · ${v.technicien}</div></div>
+          <div style="min-width:180px;"><div class="progress-wrap"><div class="progress-bar"><div style="width:${pct}%"></div></div><span class="mono" style="font-size:11px;">${pct}%</span></div></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h3>🔍 Contrôle visuel</h3><span class="sub">résultats par catégorie</span></div>
+        <div class="panel-body pad">
+          ${CATEGORIES.map(cat=>{
+            const items = visuelItems.filter(x=>x.catId===cat.id);
+            if(items.length===0) return "";
+            return `<div style="margin-bottom:18px;">
+              <div class="cat-title" style="margin-bottom:8px;"><span class="num">${cat.id}</span>${cat.nom}</div>
+              ${items.map(cst => editable ? renderItemRow(cst, true) : renderReadOnlyConstatRow(cst)).join("")}
+            </div>`;
+          }).join("")}
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h3>🛠 Actions de maintenance préventive</h3></div>
+        <div class="panel-body pad">
+          ${actionItems.length===0 ? `<div class="hint" style="margin:0;">Aucune action pour cette visite.</div>` :
+            actionItems.map(cst => editable ? renderItemRow(cst, true) : renderReadOnlyConstatRow(cst)).join("")}
+        </div>
+      </div>
+    </div>`;
+}
+function openLightbox(src){
+  document.getElementById("lightboxImg").src = src;
+  document.getElementById("lightboxOverlay").style.display = "flex";
+}
+function closeLightbox(){
+  document.getElementById("lightboxOverlay").style.display = "none";
+}
+function photoCount(item){ return item.photosData ? item.photosData.length : (item.photos||0); }
+function renderPhotoControl(item, editable){
+  const count = photoCount(item);
+  const thumbs = item.photosData && item.photosData.length ? `
+    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; width:100%;">
+      ${item.photosData.map((src,i)=>`
+        <div style="position:relative;">
+          <img src="${src}" style="width:44px; height:44px; object-fit:cover; border-radius:5px; border:1px solid var(--panel-line); cursor:zoom-in;" onclick="openLightbox(this.src)">
+          ${editable ? `<button type="button" onclick="event.stopPropagation(); removePhoto('${item.id}',${i})" style="position:absolute; top:-6px; right:-6px; background:var(--rust); color:#fff; border:none; border-radius:50%; width:16px; height:16px; font-size:10px; line-height:1; cursor:pointer; padding:0;">×</button>` : ''}
+        </div>`).join("")}
+    </div>` : '';
+  if(!editable){
+    return count ? `<span class="photo-chip">📷 ${count} photo(s)</span>${thumbs}` : '';
+  }
+  return `
+    <input type="file" accept="image/*" multiple id="photoInput-${item.id}" style="display:none;" onchange="handlePhotoUpload('${item.id}', this.files)">
+    <button class="photo-chip" type="button" onclick="document.getElementById('photoInput-${item.id}').click()">📷 ${count} photo(s) - ajouter</button>
+    ${thumbs}`;
+}
+function handlePhotoUpload(itemId, fileList){
+  const item = findConstat(itemId);
+  if(!item.photosData) item.photosData = [];
+  const files = Array.from(fileList).slice(0, Math.max(0, 5 - item.photosData.length));
+  if(files.length===0){ alert("Maximum 5 photos par constat."); return; }
+  files.forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = e=>{
+      const img = new Image();
+      img.onload = ()=>{
+        const maxW = 200;
+        const scale = Math.min(1, maxW / img.width);
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(img.width*scale); canvas.height = Math.round(img.height*scale);
+        canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+        item.photosData.push(canvas.toDataURL("image/jpeg", 0.6));
+        render();
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+function removePhoto(itemId, idx){
+  const item = findConstat(itemId);
+  item.photosData.splice(idx,1);
+  render();
+}
+
+function renderItemRow(item, editable, withLabels){
+  const dis = editable ? "" : "disabled";
+  const lbl = (t) => withLabels ? `<label class="login-label" style="margin:10px 0 4px; display:block; width:100%;">${t}</label>` : "";
+  return `
+  <div class="item-row">
+    <div class="item-txt">${item.texte}</div>
+    <div class="item-controls" style="${withLabels ? 'flex-direction:column; align-items:stretch;' : ''}">
+      ${lbl("Suivi")}<select class="status-select" ${dis} onchange="updateConstat('${item.id}','statut',this.value)">
+        <option value="">- Statut -</option>${STATUTS.map(s=>`<option value="${s}" ${item.statut===s?'selected':''}>${s}</option>`).join("")}
+      </select>
+      ${lbl("Échéance")}<select ${dis} onchange="updateConstat('${item.id}','echeance',this.value)">
+        <option value="">Échéance</option>${ECHEANCES.map(s=>`<option value="${s}" ${item.echeance===s?'selected':''}>${s}</option>`).join("")}
+      </select>
+      ${lbl("Remarque")}<input type="text" ${dis} placeholder="Remarque…" value="${item.remarque||''}" onchange="updateConstat('${item.id}','remarque',this.value)">
+      ${lbl("Devis")}<select ${dis} onchange="updateConstat('${item.id}','devis',this.value)">
+        <option value="">Devis</option>${DEVIS_STATUTS.map(s=>`<option value="${s}" ${item.devis===s?'selected':''}>${s}</option>`).join("")}
+      </select>
+      ${renderPhotoControl(item, editable)}
+    </div>
+  </div>`;
+}
+function renderCuratifRow(visiteId, item, editable, withLabels, restrictDevis, notify){
+  const dis = editable ? "" : "disabled";
+  const lbl = (t) => withLabels ? `<label class="login-label" style="margin:10px 0 4px; display:block; width:100%;">${t}</label>` : "";
+  const devisLocked = restrictDevis && item.devis === "Validé MC";
+  const devisDis = devisLocked ? "disabled" : dis;
+  const devisOptions = restrictDevis ? DEVIS_STATUTS_CURATIF.filter(s=>s!=="Validé MC") : DEVIS_STATUTS_CURATIF;
+  const chg = (field) => notify
+    ? `curatifFieldChangeNotify('${visiteId}','${item.id}','${field}',this.value)`
+    : `updateConstat('${item.id}','${field}',this.value)`;
+  return `
+  <div class="item-row" style="margin-left:29px; border-left:3px solid var(--rust);">
+    <div class="item-controls" style="margin-bottom:8px;">
+      <input type="text" ${dis} value="${item.texte}" style="flex:2; min-width:220px; font-weight:500;" onchange="${chg('texte')}">
+      <span class="badge action" style="flex:none;">MC</span>
+      ${item.auto ? `<span class="badge vigilance" style="flex:none;" title="Générée automatiquement lors du contrôle visuel">🔍 Détecté au contrôle</span>` : ''}
+      ${item.cloture ? `<span class="badge bon" style="flex:none;">✓ Clôturée</span>` : ''}
+      ${editable ? `<button class="icon-btn" title="Supprimer l'intervention" type="button" onclick="deleteCuratif('${visiteId}','${item.id}')">🗑</button>` : ''}
+    </div>
+    <div class="item-controls" style="${withLabels ? 'flex-direction:column; align-items:stretch;' : ''}">
+      ${lbl("Suivi")}<select class="status-select" ${dis} onchange="${chg('statut')}">
+        <option value="">- Statut -</option>${STATUTS.map(s=>`<option value="${s}" ${item.statut===s?'selected':''}>${s}</option>`).join("")}
+      </select>
+      ${lbl("Échéance")}<select ${dis} onchange="${chg('echeance')}" title="Échéance (NA si aucune reprise programmée)">
+        <option value="">Échéance</option>${ECHEANCES.map(s=>`<option value="${s}" ${item.echeance===s?'selected':''}>${s}</option>`).join("")}
+      </select>
+      ${lbl("Devis")}<select ${devisDis} onchange="${chg('devis')}">
+        <option value="">Devis</option>${devisOptions.map(s=>`<option value="${s}" ${item.devis===s?'selected':''}>${s}</option>`).join("")}
+        ${devisLocked ? `<option value="Validé MC" selected>Validé MC</option>` : ''}
+      </select>
+      ${devisLocked ? `<span class="badge bon" style="flex:none;">🔒 Validé par l'administration</span>` : ''}
+      ${lbl("Montant (FCFA)")}<input type="number" ${dis} value="${item.montant||0}" placeholder="Montant FCFA" style="width:130px;" onchange="${notify ? `curatifFieldChangeNotify('${visiteId}','${item.id}','montant',parseInt(this.value,10)||0)` : `updateConstat('${item.id}','montant',parseInt(this.value,10)||0)`}">
+      ${renderPhotoControl(item, editable)}
+    </div>
+  </div>`;
+}
+function curatifFieldChangeNotify(visiteId, itemId, field, rawValue){
+  const v = VISITES.find(v=>v.id===visiteId);
+  const item = v.curatif.find(x=>x.id===itemId);
+  const value = field==="montant" ? (parseInt(rawValue,10)||0) : rawValue;
+  item[field] = value;
+  const nom = CURRENT_USER ? CURRENT_USER.nom : "Technicien";
+  let texte = null;
+  if(field==="statut" && value==="FAIT") texte = `La maintenance curative a été faite - « ${item.texte} ».`;
+  else if(field==="montant") texte = `Montant du devis mis à jour : ${fmtFCFA(value)} - « ${item.texte} ».`;
+  else if(field==="devis" && value==="Attente validation") texte = `Un devis a été envoyé, dans le cadre de cette maintenance (« ${item.texte} »).`;
+  else if(field==="statut") texte = `Suivi mis à jour : ${value||'-'} - « ${item.texte} ».`;
+  else if(field==="echeance") texte = `Échéance mise à jour : ${value||'-'} - « ${item.texte} ».`;
+  else if(field==="devis") texte = `Devis mis à jour : ${value||'-'} - « ${item.texte} ».`;
+  else if(field==="texte") texte = `Description de l'intervention mise à jour.`;
+  if(texte) v.commentaires.push({qui:"tech", nom, texte, date:"maintenant"});
+  render();
+}
+function updateConstat(id, field, value){ findConstat(id)[field]=value; render(); }
+function submitNewCuratif(visiteId){
+  const txtInp = document.getElementById("newCuratifTxt-"+visiteId);
+  const montantInp = document.getElementById("newCuratifMontant-"+visiteId);
+  const texte = txtInp.value.trim();
+  if(!texte) return;
+  const v = VISITES.find(v=>v.id===visiteId);
+  v.curatif.push({
+    id: "cur-"+Date.now()+"-"+Math.floor(Math.random()*1000),
+    texte, statut:"ACTION", echeance:"NA", devis: montantInp.value?"A faire":"Non requis",
+    remarque:"", montant: parseInt(montantInp.value,10)||0, photos:0
+  });
+  render();
+}
+function deleteCuratif(visiteId, itemId){
+  const v = VISITES.find(v=>v.id===visiteId);
+  v.curatif = v.curatif.filter(x=>x.id!==itemId);
+  render();
+}
+function submitVisite(id){
+  const v = VISITES.find(v=>v.id===id);
+  const nonRenseignes = v.constats.filter(x=>!x.statut).length;
+  if(nonRenseignes>0){
+    const ok = confirm(`${nonRenseignes} contrôle(s) préventif(s) n'ont pas encore de statut renseigné. Soumettre quand même la visite ?`);
+    if(!ok) return;
+  }
+  v.statut="soumise"; STATE.role="tech"; STATE.screen="tech-preventif"; render();
+}
+
+function renderVisiteDetailShared(c, top, v, role){
+  const editable = role==="tech" && v.statut==="brouillon" && CURRENT_USER && v.technicien===CURRENT_USER.nom;
+  top.innerHTML = `<button class="btn ghost sm" onclick="goto('${role==='tech'?'tech-preventif':'exploit-preventif'}')" style="margin-right:8px;">← Retour</button>
+    ${editable ? `<button class="btn rust sm" onclick="submitVisite('${v.id}')">Soumettre la visite</button>` : ''}`;
+  renderCarnet(c, v, editable);
+  const thread=document.createElement("div"); thread.style.maxWidth="760px";
+  thread.innerHTML = renderThreadPanel(v, false); // le technicien doit toujours pouvoir échanger avec l'exploitation
+  c.appendChild(thread); bindThreadForm(v);
+}
+function renderThreadPanel(v, readonly){
+  return `<div class="panel" style="margin-top:16px;">
+    <div class="panel-head"><h3>Échanges - ${v.site}</h3><span class="badge ${badgeClass(v.statut)}">${v.statut}</span></div>
+    <div class="comment-thread">
+      ${v.commentaires.length===0 ? `<div style="color:var(--slate-light); font-size:12.5px;">Aucun échange pour l'instant.</div>` :
+        v.commentaires.map(m=>`<div class="comment"><div class="who ${m.qui}">${m.qui==='ong'?'ONG':m.qui==='exploit'?'EX':'TE'}</div>
+        <div class="comment-body"><div class="comment-meta">${m.nom} · ${m.date}</div>${m.texte}</div></div>`).join("")}
+    </div>
+    ${readonly?"":`<div class="comment-form"><input type="text" id="threadInput" placeholder="Écrire un message…"><button class="btn sm" onclick="sendComment('${v.id}')">Envoyer</button></div>`}
+  </div>`;
+}
+function bindThreadForm(v){ const inp=document.getElementById("threadInput"); if(inp) inp.addEventListener("keydown", e=>{ if(e.key==="Enter") sendComment(v.id); }); }
+function sendComment(vid){
+  const v=VISITES.find(v=>v.id===vid); const inp=document.getElementById("threadInput"); if(!inp.value.trim()) return;
+  const who = STATE.role==="ong"?{qui:"ong",nom:"SPAC - Coord. Sangha"}:STATE.role==="exploit"?{qui:"exploit",nom:"Laurent Petit"}:{qui:"tech",nom:v.technicien};
+  v.commentaires.push({...who, texte:inp.value.trim(), date:"maintenant"}); render();
+}
+
+/* ---------- PLANNING (tech + exploit) ---------- */
+function renderPlanning(c, top, role){
+  const rows = SITES.map(s=>{
+    const last = lastVisiteForSite(s.nom);
+    const nd = last ? nextDue(last) : null;
+    return {site:s.nom, technicien:s.technicien, last, nd};
+  }).sort((a,b)=> (a.nd?a.nd.daysLeft:9999) - (b.nd?b.nd.daysLeft:9999));
+
+  top.innerHTML = role==="tech" ? "" : `<span class="hint" style="margin:0;">Prochaine visite estimée = dernière visite + 6 mois (cycle semestriel standard)</span>`;
+
+  c.innerHTML = `
+  <div class="panel">
+    <div class="panel-head"><h3>Prochaines échéances</h3><span class="sub">${rows.filter(r=>r.nd&&r.nd.status==='enretard').length} en retard</span></div>
+    <div class="panel-body">
+      ${rows.map(r=>{
+        if(!r.nd) return `<div class="planning-row"><div style="flex:1;"><b>${r.site}</b><div class="site-meta mono">Aucune visite enregistrée</div></div></div>`;
+        const pctElapsed = Math.min(100, Math.max(0, Math.round((1 - r.nd.daysLeft/183)*100)));
+        const color = r.nd.status==='enretard' ? 'var(--rust)' : r.nd.status==='bientot' ? 'var(--amber)' : 'var(--verdigris)';
+        const label = r.nd.status==='enretard' ? `En retard de ${Math.abs(r.nd.daysLeft)} j` : r.nd.status==='bientot' ? `Dans ${r.nd.daysLeft} j` : `Dans ${r.nd.daysLeft} j`;
+        return `<div class="planning-row">
+          <div style="width:150px;"><b>${r.site}</b><div class="site-meta mono">${r.technicien}</div></div>
+          <div style="width:150px; font-size:11.5px; color:var(--slate);">Dernière : ${fmtDate(r.last.date)}</div>
+          <div class="planning-bar-wrap"><div class="planning-bar" style="width:${pctElapsed}%; background:${color};"></div></div>
+          <div style="width:150px; text-align:right;"><span class="badge ${r.nd.status}">${label}</span></div>
+        </div>`;
+      }).join("")}
+    </div>
+  </div>`;
+}
+
+/* ---------- EXPLOITATION : dashboard ---------- */
+function renderExploitDashboard(c, top){
+  const allLast = SITES.map(s=>lastVisiteForSite(s.nom)).filter(Boolean);
+  const totalActionsPreventif = allLast.reduce((s,v)=>s+v.action+v.encours+v.asurv,0);
+  const totalCuratifOuvert = allLast.reduce((s,v)=>s+(v.curatifOuvert||0),0);
+  const enAttenteValidation = VISITES.filter(v=>v.statut==="soumise").length;
+  const devis = countDevisAttenteMontant();
+  const tauxRasGlobal = Math.round(allLast.reduce((s,v)=>s+v.ras,0) / allLast.reduce((s,v)=>s+v.ras+v.action+v.encours+v.fait+v.asurv,0) *100);
+  const enRetard = SITES.filter(s=>{ const l=lastVisiteForSite(s.nom); return l && nextDue(l).status==='enretard'; }).length;
+
+  c.innerHTML = `
+    <div class="grid kpis">
+      <div class="card kpi-card ink"><div class="l">Sites suivis</div><div class="n">${SITES.length}</div><div class="d">Écoles SPAC - Sangha</div></div>
+      <div class="card kpi-card amber"><div class="l">Visites soumises <span class="trend up">+${enAttenteValidation}</span></div><div class="n">${enAttenteValidation}</div><div class="d">à contrôler dans Maintenance préventive</div></div>
+      <div class="card kpi-card rust"><div class="l">Actions préventives</div><div class="n">${totalActionsPreventif}</div><div class="d">checklist - tous sites</div></div>
+      <div class="card kpi-card rust"><div class="l">Interventions curatives <span class="badge action" style="margin-left:4px;">MC</span></div><div class="n">${totalCuratifOuvert}</div><div class="d">chantiers ponctuels ouverts</div></div>
+      <div class="card kpi-card verdigris"><div class="l">Taux RAS global</div><div class="n">${tauxRasGlobal}%</div><div class="d">items conformes</div></div>
+      <div class="card kpi-card rust"><div class="l">Sites en retard</div><div class="n">${enRetard}</div><div class="d">échéance dépassée</div></div>
+      <div class="card kpi-card amber"><div class="l">Devis en attente</div><div class="n">${fmtFCFA(devis.montant)}</div><div class="d">${devis.n} devis à arbitrer</div></div>
+    </div>
+
+    <div class="row2">
+      <div class="panel">
+        <div class="panel-head"><h3>Actions ouvertes par site</h3><span class="sub">dernière visite de chaque école</span></div>
+        <div class="chart-wrap"><div class="chart-box"><canvas id="chartSites"></canvas></div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>Répartition des statuts</h3><span class="sub">cumul de la dernière visite / site</span></div>
+        <div class="chart-wrap"><div class="chart-box sm"><canvas id="chartDonut"></canvas></div></div>
+        <div class="legend-list">
+          <span><i style="background:#3E6E5C"></i>RAS</span><span><i style="background:#B7502E"></i>Action</span>
+          <span><i style="background:#C6862A"></i>En cours</span><span><i style="background:#8f978f"></i>Fait / autre</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="row2 section-gap">
+      <div class="panel">
+        <div class="panel-head"><h3>Tendance des actions ouvertes</h3><span class="sub">nombre d'actions relevées par mois</span></div>
+        <div class="chart-wrap"><div class="chart-box"><canvas id="chartTrend"></canvas></div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>Alertes</h3><span class="sub">à surveiller / en retard</span></div>
+        <div id="alertList"></div>
+      </div>
+    </div>
+
+    <div class="row2 section-gap">
+      <div class="panel">
+        <div class="panel-head"><h3>Situation par site</h3></div>
+        <div class="panel-body"><table>
+          <thead><tr><th>École</th><th>Dernière visite</th><th>État</th><th>Préventif</th><th>Curatif (MC)</th><th></th></tr></thead>
+          <tbody>${SITES.map(s=>{
+            const v=lastVisiteForSite(s.nom); const score=healthScore(v); const hl=healthLabel(score);
+            return `<tr class="clickable" onclick="${v&&v.detailed?`openVisite('${v.ref.id}')`:''}">
+              <td><b>${s.nom}</b></td><td class="mono">${v?fmtDate(v.date):'-'}</td>
+              <td><span class="badge ${hl.cls}">${hl.txt}${score!==null?' · '+score+'%':''}</span></td>
+              <td class="mono">${v?v.action+v.encours+v.asurv:'-'}</td>
+              <td class="mono">${v?(v.curatifOuvert||0):'-'}</td>
+              <td style="text-align:right; color:var(--slate-light);">${v&&v.detailed?'→':''}</td>
+            </tr>`;
+          }).join("")}</tbody>
+        </table></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>Activité récente</h3></div>
+        <div class="feed">${ACTIVITY.map(a=>`
+          <div class="feed-item"><div class="feed-ico ${a.type}">${a.type==='validation'?'✓':a.type==='devis'?'฿':a.type==='alerte'?'!':'↑'}</div>
+          <div><div class="feed-text">${a.texte}</div><div class="feed-meta">${a.date}</div></div></div>`).join("")}</div>
+      </div>
+    </div>`;
+
+  // Alertes list
+  const alertBox = document.getElementById("alertList");
+  const alerts = [];
+  VISITES.forEach(v=>v.constats.forEach(x=>{ if(x.statut==="A SURVEILLER") alerts.push({txt:`${v.site} - ${x.remarque||x.texte}`, meta:fmtDate(v.date)}); }));
+  SITES.forEach(s=>{ const l=lastVisiteForSite(s.nom); if(l && nextDue(l).status==='enretard') alerts.push({txt:`${s.nom} - visite en retard de ${Math.abs(nextDue(l).daysLeft)} jours`, meta:"Planning"}); });
+  alertBox.innerHTML = alerts.length ? alerts.map(a=>`<div class="alert-item"><div class="alert-dot"></div><div><div class="alert-txt">${a.txt}</div><div class="alert-meta">${a.meta}</div></div></div>`).join("")
+    : `<div class="empty" style="padding:24px;">Aucune alerte active.</div>`;
+
+  drawCharts(allLast);
+}
+
+function drawCharts(allLast){
+  const ink="#1B2420", rust="#B7502E", amber="#C6862A", verd="#3E6E5C", slate="#95907F";
+  Chart.defaults.font.family = "'IBM Plex Sans', sans-serif";
+  Chart.defaults.font.size = 11;
+  Chart.defaults.color = "#6B655A";
+
+  // bar actions par site - préventif vs curatif (MC), empilé
+  new Chart(document.getElementById("chartSites"), {
+    type:'bar',
+    data:{ labels:SITE_NAMES, datasets:[
+      { label:"Préventif", data: SITES.map(s=>{const v=lastVisiteForSite(s.nom); return v?v.action+v.encours+v.asurv:0;}), backgroundColor: rust, borderRadius:3, maxBarThickness:26 },
+      { label:"Curatif (MC)", data: SITES.map(s=>{const v=lastVisiteForSite(s.nom); return v?(v.curatifOuvert||0):0;}), backgroundColor: ink, borderRadius:3, maxBarThickness:26 },
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top', align:'end', labels:{boxWidth:10}}}, scales:{ y:{beginAtZero:true, stacked:true, grid:{color:"#e3ded0"}}, x:{stacked:true, grid:{display:false}} } }
+  });
+
+  // donut répartition
+  const sums = allLast.reduce((a,v)=>({ras:a.ras+v.ras, action:a.action+v.action, encours:a.encours+v.encours, autre:a.autre+v.fait+v.asurv}), {ras:0,action:0,encours:0,autre:0});
+  new Chart(document.getElementById("chartDonut"), {
+    type:'doughnut',
+    data:{ labels:["RAS","Action","En cours","Fait / autre"], datasets:[{ data:[sums.ras,sums.action,sums.encours,sums.autre], backgroundColor:[verd,rust,amber,slate], borderWidth:0 }]},
+    options:{ responsive:true, maintainAspectRatio:false, cutout:'68%', plugins:{legend:{display:false}} }
+  });
+
+  // trend line par mois
+  const months = {};
+  HISTORY.concat(VISITES.map(v=>({date:v.date, action:v.constats.filter(c=>c.statut==="ACTION").length+v.constats.filter(c=>c.statut==="EN COURS").length+v.constats.filter(c=>c.statut==="A SURVEILLER").length}))).forEach(h=>{
+    const k = monthKey(h.date); months[k] = (months[k]||0) + h.action;
+  });
+  const keys = Object.keys(months).sort();
+  new Chart(document.getElementById("chartTrend"), {
+    type:'line',
+    data:{ labels:keys.map(monthLabel), datasets:[{ label:"Actions", data:keys.map(k=>months[k]), borderColor:ink, backgroundColor:"rgba(27,36,32,.08)", fill:true, tension:.35, pointRadius:3, pointBackgroundColor:ink }]},
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{beginAtZero:true, grid:{color:"#e3ded0"}}, x:{grid:{display:false}} } }
+  });
+}
+
+/* ---------- EXPLOITATION : à valider ---------- */
+/* ---------- MAINTENANCE PRÉVENTIVE / CURATIVE - vues consolidées tous sites ---------- */
+function buildPreventifRows(scope){
+  const rows=[];
+  scopedVisites(scope).forEach(v=>v.constats.forEach(x=>{
+    const cat = CATEGORIES.find(cc=>cc.id===x.catId);
+    rows.push({id:x.id, visiteId:v.id, site:v.site, visiteDate:v.date, visiteStatut:v.statut, cat: cat?cat.nom:"-", texte:x.texte, statut:x.statut, echeance:x.echeance, remarque:x.remarque, devis:x.devis});
+  }));
+  return rows.sort((a,b)=>b.visiteDate.localeCompare(a.visiteDate));
+}
+function buildCuratifRows(scope){
+  const rows=[];
+  scopedVisites(scope).forEach(v=>v.curatif.forEach(x=>{
+    rows.push({id:x.id, visiteId:v.id, site:v.site, visiteDate:v.date, visiteStatut:v.statut, texte:x.texte, statut:x.statut, echeance:x.echeance, devis:x.devis, montant:x.montant});
+  }));
+  return rows.sort((a,b)=>b.visiteDate.localeCompare(a.visiteDate));
+}
+function kpiClassForStatut(s){
+  if(s==="RAS"||s==="FAIT") return "verdigris";
+  if(s==="EN COURS") return "amber";
+  if(s==="NA") return "ink";
+  return "rust";
+}
+function setMlFilter(key, value){ STATE[key]=value; STATE.pgPreventif=1; STATE.pgCuratif=1; render(); }
+
+function renderMaintenanceListe(c, top, kind, scope){
+  const rows = kind==="preventif" ? buildPreventifRows(scope) : buildCuratifRows(scope);
+  const siteFilter = STATE.mlSite || "all";
+  const statutFilter = STATE.mlStatut || "all";
+  const bySite = siteFilter==="all" ? rows : rows.filter(r=>r.site===siteFilter);
+  const filtered = statutFilter==="all" ? bySite : bySite.filter(r=>r.statut===statutFilter);
+
+  const counts = {};
+  STATUTS.forEach(s=>counts[s]=0);
+  bySite.forEach(r=>{ counts[r.statut] = (counts[r.statut]||0)+1; });
+
+  const montantTotal = kind==="curatif" ? bySite.reduce((s,r)=>s+(r.montant||0),0) : 0;
+  const pgKey = kind==="preventif" ? "pgPreventif" : "pgCuratif";
+  const pageItems = paginate(filtered, pgKey);
+  top.innerHTML = `<span class="hint" style="margin:0;">${filtered.length} ligne(s)${kind==="curatif"?" · "+fmtFCFA(montantTotal)+" engagés":""}</span>`;
+
+  c.innerHTML = `
+    <div class="hint" style="margin-top:0;">
+      ${kind==="preventif"
+        ? "Vue consolidée de tous les contrôles préventifs (checklist périodique)."
+        : "Vue consolidée de toutes les interventions curatives (MC) - chantiers ponctuels hors checklist périodique."}
+      ${scope==="ong" ? " Seules les visites déjà validées par l'exploitation apparaissent ici."
+        : scope==="tech" ? " Uniquement vos propres visites, tous vos sites confondus - y compris vos brouillons en cours."
+        : " Tous sites et tous techniciens du client actif (visites soumises et validées ; les brouillons restent privés au technicien tant qu'ils ne sont pas soumis)."}
+    </div>
+    <div class="grid kpis">
+      ${STATUTS.map(s=>`<div class="card kpi-card ${kpiClassForStatut(s)}"><div class="l">${s}</div><div class="n">${counts[s]||0}</div></div>`).join("")}
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <h3>${kind==="preventif"?"Contrôles préventifs":"Interventions curatives"}</h3>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <select onchange="setMlFilter('mlSite', this.value)">
+            <option value="all">Tous les sites</option>
+            ${SITE_NAMES.map(s=>`<option value="${s}" ${siteFilter===s?"selected":""}>${s}</option>`).join("")}
+          </select>
+          <select onchange="setMlFilter('mlStatut', this.value)">
+            <option value="all">Tous statuts</option>
+            ${STATUTS.map(s=>`<option value="${s}" ${statutFilter===s?"selected":""}>${s}</option>`).join("")}
+          </select>
+        </div>
+      </div>
+      <div class="panel-body"><table>
+        <thead><tr>
+          <th>École</th>${kind==="preventif"?"<th>Catégorie</th>":""}<th>Intervention</th><th>Date</th><th>Statut</th><th>Échéance</th>
+          ${kind==="curatif"?"<th>Montant</th>":"<th>Remarque</th>"}<th>Devis</th><th>Visite</th>
+        </tr></thead>
+        <tbody>
+        ${filtered.length===0? `<tr><td colspan="9" style="color:var(--slate-light); text-align:center; padding:24px;">Aucune ligne pour ce filtre.</td></tr>` :
+          pageItems.map(r=>{
+            const onclick = (kind==="curatif" && scope==="exploit")
+              ? `goToExploitCuratifDetail('${r.visiteId}','${r.id}')`
+              : `openVisite('${r.visiteId}')`;
+            return `
+          <tr class="clickable" onclick="${onclick}">
+            <td><b>${r.site}</b></td>
+            ${kind==="preventif"?`<td>${r.cat}</td>`:""}
+            <td style="max-width:260px;">${r.texte}</td>
+            <td class="mono">${fmtDate(r.visiteDate)}</td>
+            <td><span class="badge ${badgeClass(r.statut)}">${r.statut||"-"}</span></td>
+            <td class="mono">${r.echeance||"-"}</td>
+            ${kind==="curatif"?`<td class="mono">${r.montant?fmtFCFA(r.montant):"-"}</td>`:`<td style="max-width:200px;">${r.remarque||""}</td>`}
+            <td>${r.devis && r.devis!=="Non requis"?`<span class="badge encours">${r.devis}</span>`:'<span style="color:var(--slate-light);">-</span>'}</td>
+            <td><span class="badge ${badgeClass(r.visiteStatut)}">${r.visiteStatut}</span></td>
+          </tr>`;
+          }).join("")}
+        </tbody>
+      </table>${renderPager(pgKey, filtered)}</div>
+    </div>`;
+}
+
+/* ---------- EXPLOITATION : Maintenance préventive - hub par site ---------- */
+function renderExploitPreventifSites(c, top){
+  top.innerHTML = `<button class="btn ghost sm" onclick="goto('exploit-preventif-liste')">Vue détaillée (toutes les lignes)</button>`;
+  const rows = SITES.map(s=>({site:s, v:lastVisiteForSite(s.nom)}))
+    .sort((a,b)=> (b.v?b.v.date:"").localeCompare(a.v?a.v.date:""));
+  c.innerHTML = `
+    <div class="hint" style="margin-top:0;">Cliquez sur un site pour voir l'historique de ses soumissions, avec le détail du contrôle visuel par catégorie et des actions réalisées.</div>
+    <div class="grid cards">
+      ${rows.map(({site,v})=>{
+        const score = healthScore(v); const hl = healthLabel(score);
+        return `<div class="card clickable" style="cursor:pointer;" onclick="goToExploitSitePreventif('${site.nom}')">
+          <div class="site-name">${site.nom}</div>
+          <div class="site-meta">${site.technicien || 'Technicien non assigné'}</div>
+          <span class="badge ${hl.cls}">${hl.txt}${score!==null?' · '+score+'%':''}</span>
+          <div class="stat-row">
+            <div class="stat"><div class="n mono" style="font-size:13px;">${v?fmtDate(v.date):'-'}</div><div class="l">Dernière soumission</div></div>
+            ${v && v.detailed ? `<div class="stat"><div class="n"><span class="badge ${badgeClass(v.statut)}">${v.statut}</span></div><div class="l">Statut</div></div>` : ''}
+          </div>
+        </div>`;
+      }).join("")}
+    </div>`;
+}
+function goToExploitSitePreventif(siteName){
+  STATE.exploitPreventifSite = siteName;
+  STATE.screen = "exploit-site-preventif";
+  render();
+}
+function renderExploitSitePreventif(c, top){
+  const siteName = STATE.exploitPreventifSite;
+  top.innerHTML = `<button class="btn ghost sm" onclick="goto('exploit-preventif')">← Retour aux sites</button>`;
+  const rows = allVisitesForSite(siteName); // déjà trié par date décroissante, mélange visites détaillées + historique agrégé
+  c.innerHTML = `
+    <div class="panel" style="padding:16px 18px; margin-bottom:16px;">
+      <div class="site-name display" style="font-size:17px;">${siteName}</div>
+      <div class="site-meta mono">Historique des soumissions - maintenance préventive et curative</div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h3>Dernières soumissions</h3><span class="sub">classées de la plus récente à la plus ancienne</span></div>
+      <div class="panel-body">
+        ${rows.length===0 ? `<div class="empty" style="padding:22px;">Aucune visite soumise pour ce site pour l'instant.</div>` :
+          rows.map(v=>{
+            const clickable = v.detailed;
+            const actionsPrev = v.action + v.encours + v.asurv;
+            return `<div class="user-row ${clickable?'row-click':''}" style="${clickable?'cursor:pointer;':''}" ${clickable?`onclick="openVisite('${v.ref.id}')"`:''}>
+              <div class="ur-name" style="flex:1; min-width:0;">Visite du ${fmtDate(v.date)} - ${v.technicien}</div>
+              <div class="ur-email mono" style="min-width:150px;">${actionsPrev} action(s) prévent. · ${v.curatifOuvert||0} curative(s)</div>
+              <span class="badge ${badgeClass(v.statut)}">${v.statut}</span>
+              ${clickable ? `<span style="color:var(--slate-light); margin-left:4px;">→</span>` : `<span class="hint" style="margin:0 0 0 6px; font-size:10.5px;">(historique agrégé)</span>`}
+            </div>`;
+          }).join("")}
+      </div>
+    </div>`;
+}
+
+/* ---------- EXPLOITATION : détail d'une intervention curative (validation) ---------- */
+function goToExploitCuratifDetail(visiteId, itemId){
+  STATE.exploitCuratifVisiteId = visiteId;
+  STATE.exploitCuratifItemId = itemId;
+  STATE.screen = "exploit-curatif-detail";
+  render();
+}
+function validerDevisCuratif(visiteId, itemId){
+  const v = VISITES.find(v=>v.id===visiteId);
+  const item = v.curatif.find(x=>x.id===itemId);
+  if(!item) return;
+  item.devis = "Validé MC";
+  render(); // pas de message automatique ici - l'administrateur rédige lui-même son commentaire s'il le souhaite
+}
+function clotureCuratif(visiteId, itemId){
+  const v = VISITES.find(v=>v.id===visiteId);
+  const item = v.curatif.find(x=>x.id===itemId);
+  if(!item) return;
+  item.cloture = true;
+  render(); // idem : aucun message automatique, l'administrateur écrit lui-même
+}
+function renderExploitCuratifDetail(c, top){
+  const v = VISITES.find(v=>v.id===STATE.exploitCuratifVisiteId);
+  const item = v ? v.curatif.find(x=>x.id===STATE.exploitCuratifItemId) : null;
+  top.innerHTML = `<button class="btn ghost sm" onclick="goto('exploit-curatif')">← Retour</button>`;
+  if(!v || !item){ c.innerHTML = `<div class="panel"><div class="empty"><div class="big">Intervention introuvable</div></div></div>`; return; }
+  c.innerHTML = `
+    <div class="panel" style="max-width:640px; margin:0 auto; padding:26px;">
+      <div class="hint" style="margin-top:0;">${v.site} · Visite du ${fmtDate(v.date)} · Technicien : ${v.technicien}</div>
+      <h2 style="margin-bottom:18px;">${item.texte}</h2>
+      ${renderCuratifRow(v.id, item, true, true, false)}
+
+      <div class="hint" style="margin-top:22px; margin-bottom:6px;">Document du devis soumis par le technicien</div>
+      ${item.devisFile ? `<a href="${item.devisFile.dataUrl}" download="${item.devisFile.name}" class="photo-chip" style="text-decoration:none; display:inline-flex;">📎 ${item.devisFile.name} - Télécharger ⬇</a>` : `<div class="hint" style="margin:0;">Aucun devis joint pour l'instant.</div>`}
+
+      <div class="hint" style="margin-top:22px; margin-bottom:6px;">Photos avant travaux (jointes lors de l'envoi en maintenance curative)</div>
+      ${renderLargePhotos(item.photosData)}
+
+      <div class="hint" style="margin-top:22px; margin-bottom:6px;">Photos après travaux (ajoutées par le technicien)</div>
+      ${renderLargePhotos(item.photosApres)}
+
+      <div style="margin-top:22px; padding-top:18px; border-top:1px dashed var(--panel-line); display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        ${item.devis==="Validé MC"
+          ? `<span class="badge bon" style="font-size:12px; padding:8px 14px;">✓ Devis validé - maintenance curative autorisée</span>`
+          : `<button class="btn verdigris" onclick="validerDevisCuratif('${v.id}','${item.id}')">Valider le devis (Validé MC)</button>`}
+        ${item.soumisPourRevue ? `<span class="badge soumise">Soumis pour revue par le technicien</span>` : ''}
+      </div>
+      <div style="margin-top:10px;">
+        ${item.cloture
+          ? `<span class="badge bon" style="font-size:12px; padding:8px 14px;">✓ Intervention clôturée</span>`
+          : item.statut==="FAIT"
+            ? `<button class="btn rust" onclick="clotureCuratif('${v.id}','${item.id}')">Clôturer l'intervention</button>`
+            : `<span class="hint" style="margin:0; font-size:11.5px;">En attente que le technicien marque les travaux comme faits.</span>`}
+      </div>
+    </div>
+
+    <div class="panel" style="max-width:640px; margin:16px auto 0;">
+      ${renderThreadPanel(v, false)}
+    </div>`;
+  bindThreadForm(v);
+}
+
+function renderExploitDetail(c, top){
+  const v = VISITES.find(v=>v.id===STATE.activeVisiteId);
+  top.innerHTML = `<button class="btn ghost sm" onclick="goToExploitSitePreventif('${v.site}')" style="margin-right:8px;">← Retour à l'historique du site</button>
+    ${v.statut==="soumise" ? `
+      <button class="btn verdigris sm" onclick="validateVisite('${v.id}')" style="margin-right:8px;">Valider la visite</button>
+      <button class="btn ghost sm" onclick="returnToTechnicien('${v.id}')">↩ Renvoyer au technicien</button>
+    ` : `<span class="stamp">Validée</span>`}`;
+  renderCarnet(c, v, false);
+  const thread=document.createElement("div"); thread.style.maxWidth="760px";
+  thread.innerHTML = renderThreadPanel(v, false);
+  c.appendChild(thread); bindThreadForm(v);
+}
+function validateVisite(id){ VISITES.find(v=>v.id===id).statut="validee"; render(); }
+function returnToTechnicien(id){
+  const v = VISITES.find(v=>v.id===id);
+  const motif = prompt("Motif du renvoi au technicien (laissez vide pour ne pas ajouter de message) :", "");
+  if(motif===null) return; // annulé
+  v.statut = "brouillon";
+  if(motif.trim()){
+    v.commentaires.push({qui:"exploit", nom:CURRENT_USER?CURRENT_USER.nom:"Exploitation", texte:"Visite renvoyée pour correction - "+motif.trim(), date:"maintenant"});
+  }
+  STATE.screen = "exploit-preventif";
+  render();
+}
+
+/* ---------- Grille sites ---------- */
+function renderSitesGrid(c, top){
+  const isOng = STATE.role === "ong";
+  const getLast = isOng ? lastValidatedVisiteForSite : lastVisiteForSite;
+  const pageItems = paginate(SITES, "pgSites");
+  c.innerHTML = `${isOng? `<div class="hint" style="margin-top:0;">Seules les visites déjà contrôlées et validées par ${activeClientMeta()?"l'exploitation":"l'exploitation"} apparaissent ici.</div>`:''}
+  <div class="grid cards">${pageItems.map(s=>{
+    const v = getLast(s.nom); const score=healthScore(v); const hl=healthLabel(score);
+    const actions = v ? v.action+v.encours+v.asurv : 0;
+    const canOpen = v && v.detailed;
+    return `<div class="card ${canOpen?'clickable':''}" ${canOpen?`onclick="openVisite('${v.ref.id}')" style="cursor:pointer;"`:''}>
+      <div class="site-name">${s.nom}</div>
+      <div class="site-meta">${s.eleves} élèves · ${s.technicien || 'Technicien non assigné'}</div>
+      <span class="badge ${hl.cls}">${hl.txt}${score!==null?' · '+score+'%':''}</span>
+      <div class="stat-row">
+        <div class="stat ${actions>3?'warn':actions>0?'pend':'ok'}"><div class="n">${actions}</div><div class="l">Actions</div></div>
+        <div class="stat"><div class="n mono" style="font-size:13px;">${v?fmtDate(v.date):'-'}</div><div class="l">${isOng?'Dernière visite validée':'Dernière visite'}</div></div>
+      </div>
+    </div>`;
+  }).join("")}</div>
+  <div class="panel" style="margin-top:2px;">${renderPager("pgSites", SITES)}</div>`;
+}
+
+/* ---------- STATISTIQUES ---------- */
+function renderStats(c, top){
+  // par catégorie (sur les visites détaillées disponibles)
+  const catStats = CATEGORIES.map(cat=>{
+    let ras=0, action=0, autre=0, total=0;
+    VISITES.forEach(v=>v.constats.filter(x=>x.catId===cat.id).forEach(x=>{
+      total++; if(x.statut==="RAS") ras++; else if(x.statut==="ACTION"||x.statut==="A SURVEILLER"||x.statut==="EN COURS") action++; else autre++;
+    }));
+    return {cat, ras, action, autre, total};
+  });
+  // par technicien
+  const techs = {};
+  VISITES.concat(HISTORY).forEach(v=>{
+    const t = v.technicien; if(!techs[t]) techs[t]={visites:0, ras:0, total:0};
+    techs[t].visites++;
+    if(v.constats){ v.constats.forEach(x=>{ techs[t].total++; if(x.statut==="RAS") techs[t].ras++; }); }
+    else { techs[t].total += v.ras+v.action+v.encours+v.fait+v.asurv; techs[t].ras += v.ras; }
+  });
+
+  c.innerHTML = `
+    <div class="row2">
+      <div class="panel">
+        <div class="panel-head"><h3>Répartition par catégorie de maintenance</h3><span class="sub">visites détaillées disponibles</span></div>
+        <div class="chart-wrap"><div class="chart-box"><canvas id="chartCat"></canvas></div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>Charge par technicien</h3></div>
+        <div class="panel-body"><table>
+          <thead><tr><th>Technicien</th><th>Visites</th><th>Taux RAS</th></tr></thead>
+          <tbody>${Object.entries(techs).map(([t,d])=>`
+            <tr><td><b>${t}</b></td><td class="mono">${d.visites}</td><td class="mono">${d.total?Math.round(d.ras/d.total*100):0}%</td></tr>
+          `).join("")}</tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <div class="panel section-gap">
+      <div class="panel-head"><h3>Détail par catégorie</h3></div>
+      <div class="panel-body"><table>
+        <thead><tr><th>Catégorie</th><th>Fréquence</th><th>RAS</th><th>Action / à surveiller</th><th>Autre</th></tr></thead>
+        <tbody>${catStats.map(s=>`
+          <tr><td><b>${s.cat.id}. ${s.cat.nom}</b></td><td class="mono">${s.cat.freq}</td>
+          <td class="mono">${s.ras}</td><td class="mono" style="color:var(--rust-dark);">${s.action}</td><td class="mono">${s.autre}</td></tr>
+        `).join("")}</tbody>
+      </table></div>
+    </div>
+
+    <div class="panel section-gap">
+      <div class="panel-head"><h3>Maintenance curative (MC)</h3><span class="sub">interventions ponctuelles, hors checklist périodique</span></div>
+      <div class="panel-body"><table>
+        <thead><tr><th>École</th><th>Intervention</th><th>Statut</th><th>Échéance</th><th>Montant</th></tr></thead>
+        <tbody>${VISITES.flatMap(v=>v.curatif.map(x=>({v,x}))).length===0 ? `<tr><td colspan="5" style="color:var(--slate-light);">Aucune intervention curative enregistrée.</td></tr>` :
+          VISITES.flatMap(v=>v.curatif.map(x=>({v,x}))).map(({v,x})=>`
+          <tr><td><b>${v.site}</b></td><td style="max-width:280px;">${x.texte}</td>
+          <td><span class="badge ${badgeClass(x.statut)}">${x.statut}</span></td>
+          <td class="mono">${x.echeance||'NA'}</td><td class="mono">${x.montant?fmtFCFA(x.montant):'-'}</td></tr>
+        `).join("")}</tbody>
+      </table></div>
+    </div>`;
+
+  new Chart(document.getElementById("chartCat"), {
+    type:'bar',
+    data:{ labels:catStats.map(s=>s.cat.id+". "+s.cat.nom.split(" ").slice(0,2).join(" ")),
+      datasets:[
+        {label:"RAS", data:catStats.map(s=>s.ras), backgroundColor:"#3E6E5C", borderRadius:3},
+        {label:"Action", data:catStats.map(s=>s.action), backgroundColor:"#B7502E", borderRadius:3},
+      ]},
+    options:{ responsive:true, maintainAspectRatio:false, indexAxis:'y', plugins:{legend:{position:'top', align:'end', labels:{boxWidth:10}}}, scales:{ x:{stacked:true, grid:{color:"#e3ded0"}}, y:{stacked:true, grid:{display:false}} } }
+  });
+}
+
+/* ---------- DEVIS & BUDGET (kanban) ---------- */
+function collectDevisItems(){
+  const items=[];
+  VISITES.forEach(v=>{
+    v.constats.forEach(x=>{ if(x.devis && x.devis!=="Non requis") items.push({id:x.id, site:v.site, texte:x.texte||x.remarque, statut:x.devis, montant:x.montant||0, type:"preventif"}); });
+    v.curatif.forEach(x=>{ if(x.devis && x.devis!=="Non requis") items.push({id:x.id, site:v.site, texte:x.texte||x.remarque, statut:x.devis, montant:x.montant||0, type:"curatif"}); });
+  });
+  HISTORY.forEach(h=>{
+    if(h.devisAttente>0) items.push({id:null, site:h.site, texte:"Interventions diverses - devis groupé (historique)", statut:"Attente validation", montant:h.devisAttente, type:"curatif"});
+    if(h.devisValide>0) items.push({id:null, site:h.site, texte:"Interventions réalisées (validées, historique)", statut:"Validé", montant:h.devisValide, type:"curatif"});
+  });
+  return items;
+}
+function renderDevisBudget(c, top){
+  const items = collectDevisItems();
+  const cols = [
+    {key:"A faire", label:"À chiffrer / à faire"},
+    {key:"Attente validation", label:"En attente de validation ONG"},
+    {key:"Validé", label:"Validé"},
+  ];
+  const totalAnnee = totalDevisValideAnnee();
+  const attente = countDevisAttenteMontant();
+  const montantCuratif = items.filter(i=>i.type==="curatif").reduce((s,i)=>s+i.montant,0);
+  const montantPreventif = items.filter(i=>i.type==="preventif").reduce((s,i)=>s+i.montant,0);
+
+  c.innerHTML = `
+    <div class="grid kpis">
+      <div class="card kpi-card verdigris"><div class="l">Budget validé (année)</div><div class="n" style="font-size:20px;">${fmtFCFA(totalAnnee)}</div></div>
+      <div class="card kpi-card amber"><div class="l">En attente de validation</div><div class="n" style="font-size:20px;">${fmtFCFA(attente.montant)}</div><div class="d">${attente.n} devis</div></div>
+      <div class="card kpi-card rust"><div class="l">Dont curatif (MC)</div><div class="n" style="font-size:20px;">${fmtFCFA(montantCuratif)}</div><div class="d">interventions ponctuelles</div></div>
+      <div class="card kpi-card ink"><div class="l">Dont préventif</div><div class="n" style="font-size:20px;">${fmtFCFA(montantPreventif)}</div><div class="d">issu de la checklist</div></div>
+    </div>
+    <div class="kanban">
+      ${cols.map(col=>{
+        const colItems = items.filter(i=>i.statut===col.key);
+        const total = colItems.reduce((s,i)=>s+i.montant,0);
+        return `<div class="kanban-col">
+          <div class="kanban-col-head"><h4>${col.label}</h4><span class="tot">${fmtFCFA(total)}</span></div>
+          <div class="kanban-body">
+            ${colItems.length? colItems.map(i=>`
+              <div class="kanban-card"><div class="site">${i.site} · <span style="color:${i.type==='curatif'?'var(--rust-dark)':'var(--verdigris-dark)'};">${i.type==='curatif'?'MC - Curatif':'Préventif'}</span></div><div class="txt">${i.texte}</div>
+              <div class="amt">${i.montant?fmtFCFA(i.montant):'Montant non défini'}</div>
+              ${i.id ? `<select style="width:100%; margin-top:8px;" onchange="updateConstat('${i.id}','devis',this.value)">
+                ${(i.type==='curatif' ? DEVIS_STATUTS_CURATIF : DEVIS_STATUTS).filter(s=>s!=="Non requis").map(s=>`<option value="${s}" ${i.statut===s?'selected':''}>${s}</option>`).join("")}
+              </select>` : `<div class="site" style="margin-top:6px; font-style:italic;">Donnée historique agrégée - non modifiable</div>`}
+              </div>
+            `).join("") : `<div class="kanban-empty">Aucun devis</div>`}
+          </div>
+        </div>`;
+      }).join("")}
+    </div>`;
+}
+
+/* ---------- GESTION DES ITEMS (checklist référentiel) ---------- */
+function renderItemsManagement(c, top){
+  top.innerHTML = `<span class="hint" style="margin:0;">${CATEGORIES.length} catégories · ${CATEGORIES.reduce((s,cc)=>s+cc.items.length,0)} items</span>`;
+  c.innerHTML = `
+    <div class="hint" style="max-width:760px;">
+      Ce référentiel de contrôle est commun à toutes les visites d'<b>${activeClientMeta()?activeClientMeta().nom:'ce client'}</b>.
+      Les ajouts/modifications s'appliquent aux visites en brouillon et à toutes les nouvelles visites ;
+      les visites déjà soumises ou validées conservent leur contenu d'origine.
+    </div>
+    <div style="max-width:760px; display:flex; flex-direction:column; gap:14px;">
+      ${CATEGORIES.map(cat=>`
+        <div class="panel">
+          <div class="panel-body pad">
+            <div class="mgmt-cat-head">
+              <input type="text" class="mgmt-cat-name" value="${cat.nom}" onchange="updateCategory(${cat.id},'nom',this.value)">
+              <select class="freq-select" onchange="updateCategory(${cat.id},'freq',this.value)">
+                ${["Semestrielle","Trimestrielle","Selon état"].map(f=>`<option value="${f}" ${cat.freq===f?'selected':''}>${f}</option>`).join("")}
+              </select>
+              <button class="icon-btn" title="Supprimer la catégorie" onclick="deleteCategory(${cat.id})">🗑</button>
+            </div>
+            ${cat.items.map(item=>`
+              <div class="mgmt-item-row" style="flex-direction:column; align-items:stretch; gap:8px; background:#fbfaf6; border:1px solid var(--panel-line); border-radius:7px; padding:9px 10px; margin-bottom:8px;">
+                <div style="display:flex; gap:8px; align-items:center;">
+                  <input type="text" style="flex:1;" value="${item.texte}" onchange="updateItem(${cat.id},'${item.id}',this.value)">
+                  <select onchange="updateItemType(${cat.id},'${item.id}',this.value)" style="width:150px;">
+                    <option value="action" ${item.type==="action"?"selected":""}>🛠 Action</option>
+                    <option value="visuel" ${item.type==="visuel"?"selected":""}>🔍 Contrôle visuel</option>
+                  </select>
+                  <button class="icon-btn" title="Supprimer l'item" onclick="deleteItem(${cat.id},'${item.id}')">🗑</button>
+                </div>
+                ${item.type==="visuel" ? `
+                <div style="padding:8px 10px; background:#fff; border:1px dashed var(--panel-line); border-radius:6px;">
+                  <div style="font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--slate); margin-bottom:6px;">Éléments à contrôler</div>
+                  ${(item.elements||[]).map(el=>`
+                    <div class="mgmt-item-row" style="padding:2px 0;">
+                      <input type="text" value="${el.nom}" onchange="updateElementName(${cat.id},'${item.id}','${el.id}',this.value)">
+                      <button class="icon-btn" title="Supprimer" onclick="deleteElement(${cat.id},'${item.id}','${el.id}')">🗑</button>
+                    </div>`).join("")}
+                  <div class="mgmt-add-row">
+                    <input type="text" id="newEl-${item.id}" placeholder="Ajouter un élément (ex : Poteaux)…">
+                    <button class="btn ghost sm" onclick="addElement(${cat.id},'${item.id}',document.getElementById('newEl-${item.id}').value)">+ Ajouter</button>
+                  </div>
+                  <div style="font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--slate); margin:10px 0 6px;">Critères de détection (posés pour chaque élément)</div>
+                  ${(item.criteres||[]).map((crit,idx)=>`
+                    <div class="mgmt-item-row" style="padding:2px 0;">
+                      <input type="text" value="${crit}" onchange="updateCritereText(${cat.id},'${item.id}',${idx},this.value)">
+                      <button class="icon-btn" title="Supprimer" onclick="deleteCritere(${cat.id},'${item.id}',${idx})">🗑</button>
+                    </div>`).join("")}
+                  <div class="mgmt-add-row">
+                    <input type="text" id="newCrit-${item.id}" placeholder="Ajouter un critère (ex : Fissures)…">
+                    <button class="btn ghost sm" onclick="addCritere(${cat.id},'${item.id}',document.getElementById('newCrit-${item.id}').value)">+ Ajouter</button>
+                  </div>
+                  <div class="hint" style="margin:8px 0 0; font-size:11px;">Aperçu technicien : ${(item.elements||[]).length} élément(s) × ${(item.criteres||[]).length} critère(s) = ${(item.elements||[]).length*(item.criteres||[]).length} question(s).</div>
+                </div>` : ''}
+              </div>`).join("")}
+            <div class="mgmt-add-row">
+              <input type="text" id="newItem-${cat.id}" placeholder="Ajouter un item de contrôle…">
+              <button class="btn ghost sm" onclick="submitNewItem(${cat.id})">+ Ajouter</button>
+            </div>
+          </div>
+        </div>`).join("")}
+
+      <div class="panel">
+        <div class="panel-head"><h3>Nouvelle catégorie</h3></div>
+        <div class="panel-body pad">
+          <div class="mgmt-add-row">
+            <input type="text" id="newCatName" placeholder="Nom de la catégorie…" style="flex:1.4;">
+            <select id="newCatFreq">
+              <option value="Semestrielle">Semestrielle</option>
+              <option value="Trimestrielle">Trimestrielle</option>
+              <option value="Selon état">Selon état</option>
+            </select>
+            <button class="btn rust sm" onclick="submitNewCategory()">+ Créer</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function updateCategory(catId, field, value){
+  CATEGORIES.find(cc=>cc.id===catId)[field] = value;
+  render();
+}
+function deleteCategory(catId){
+  const cat = CATEGORIES.find(cc=>cc.id===catId);
+  if(cat.items.length>0){ alert("Videz d'abord cette catégorie de tous ses items avant de la supprimer."); return; }
+  CATEGORIES = CATEGORIES.filter(cc=>cc.id!==catId);
+  render();
+}
+function submitNewCategory(){
+  const nameInp = document.getElementById("newCatName");
+  const freqSel = document.getElementById("newCatFreq");
+  if(!nameInp.value.trim()) return;
+  CATEGORIES.push({id:nextCategoryId(), nom:nameInp.value.trim(), freq:freqSel.value, items:[]});
+  render();
+}
+function submitNewItem(catId){
+  const inp = document.getElementById("newItem-"+catId);
+  addItem(catId, inp.value);
+}
+function addItem(catId, texte){
+  if(!texte || !texte.trim()) return;
+  const item = {id:nextItemId(), texte:texte.trim(), type:"action"};
+  CATEGORIES.find(cc=>cc.id===catId).items.push(item);
+  // les visites en brouillon récupèrent immédiatement le nouvel item à contrôler
+  VISITES.filter(v=>v.statut==="brouillon").forEach(v=>{
+    v.constats.push({id:'c-'+item.id+'-'+(CONSTAT_ID_SEQ++), catId, itemId:item.id, type:item.type, texte:item.texte, statut:"", echeance:"", remarque:"", devis:"", photos:0, reponses:[]});
+  });
+  render();
+}
+function updateItem(catId, itemId, texte){
+  const cat = CATEGORIES.find(cc=>cc.id===catId);
+  const item = cat.items.find(ii=>ii.id===itemId);
+  item.texte = texte;
+  // reformulation répercutée sur toutes les visites (le libellé du contrôle change, pas son historique)
+  VISITES.forEach(v=>{ const cst=v.constats.find(x=>x.itemId===itemId); if(cst) cst.texte = texte; });
+  render();
+}
+function updateItemType(catId, itemId, newType){
+  const cat = CATEGORIES.find(cc=>cc.id===catId);
+  const item = cat.items.find(ii=>ii.id===itemId);
+  item.type = newType;
+  if(newType==="visuel"){
+    if(!item.elements || item.elements.length===0) item.elements=[{id:nextElementId(item), nom:"Élément à préciser"}];
+    if(!item.criteres || item.criteres.length===0) item.criteres=["Anomalie constatée"];
+  }
+  // le type change immédiatement le comportement côté technicien (onglet Contrôle visuel ou Action),
+  // y compris sur les visites déjà en cours (brouillon/soumise/validée conservent leur historique de statut).
+  VISITES.forEach(v=>{ const cst=v.constats.find(x=>x.itemId===itemId); if(cst) cst.type = newType; });
+  render();
+}
+function addElement(catId, itemId, nom){
+  if(!nom || !nom.trim()) return;
+  const item = CATEGORIES.find(cc=>cc.id===catId).items.find(ii=>ii.id===itemId);
+  if(!item.elements) item.elements=[];
+  item.elements.push({id:nextElementId(item), nom:nom.trim()});
+  render();
+}
+function updateElementName(catId, itemId, elId, nom){
+  const item = CATEGORIES.find(cc=>cc.id===catId).items.find(ii=>ii.id===itemId);
+  item.elements.find(e=>e.id===elId).nom = nom;
+  render();
+}
+function deleteElement(catId, itemId, elId){
+  const item = CATEGORIES.find(cc=>cc.id===catId).items.find(ii=>ii.id===itemId);
+  item.elements = item.elements.filter(e=>e.id!==elId);
+  render();
+}
+function addCritere(catId, itemId, texte){
+  if(!texte || !texte.trim()) return;
+  const item = CATEGORIES.find(cc=>cc.id===catId).items.find(ii=>ii.id===itemId);
+  if(!item.criteres) item.criteres=[];
+  item.criteres.push(texte.trim());
+  render();
+}
+function updateCritereText(catId, itemId, idx, texte){
+  const item = CATEGORIES.find(cc=>cc.id===catId).items.find(ii=>ii.id===itemId);
+  item.criteres[idx] = texte;
+  render();
+}
+function deleteCritere(catId, itemId, idx){
+  const item = CATEGORIES.find(cc=>cc.id===catId).items.find(ii=>ii.id===itemId);
+  item.criteres.splice(idx,1);
+  render();
+}
+function deleteItem(catId, itemId){
+  CATEGORIES.find(cc=>cc.id===catId).items = CATEGORIES.find(cc=>cc.id===catId).items.filter(ii=>ii.id!==itemId);
+  // retiré uniquement des visites pas encore soumises, pour ne jamais réécrire un historique validé
+  VISITES.filter(v=>v.statut==="brouillon").forEach(v=>{ v.constats = v.constats.filter(x=>x.itemId!==itemId); });
+  render();
+}
+
+/* ---------- GESTION DES CLIENTS & UTILISATEURS ---------- */
+function switchAdminTab(tab){ STATE.adminTab = tab; STATE.adminSitesClient = null; render(); }
+function openClientSites(clientId){ STATE.adminSitesClient = clientId; render(); }
+function backToClients(){ STATE.adminSitesClient = null; render(); }
+
+function renderClientsUsers(c, top){
+  top.innerHTML = `<span class="hint" style="margin:0;">${CLIENTS.length} clients · ${USERS.length} utilisateurs</span>`;
+  const tabsHtml = `<div class="admin-tabs">
+    <button class="${STATE.adminTab==='clients'?'active':''}" onclick="switchAdminTab('clients')">Clients & sites</button>
+    <button class="${STATE.adminTab==='users'?'active':''}" onclick="switchAdminTab('users')">Utilisateurs</button>
+  </div>`;
+
+  if(STATE.adminTab==="users"){ c.innerHTML = tabsHtml + renderUsersAdmin(); bindUsersAdminForm(); return; }
+
+  if(STATE.adminSitesClient){ c.innerHTML = tabsHtml + renderClientSitesAdmin(STATE.adminSitesClient); bindClientSitesForm(STATE.adminSitesClient); return; }
+
+  c.innerHTML = tabsHtml + `
+    <div class="panel" style="margin-bottom:16px;">
+      <div class="panel-body">
+        ${CLIENTS.map(cl=>`
+          <div class="client-row">
+            <div class="cr-mark" style="background:${cl.accent}">${cl.initials}</div>
+            <div><div class="cr-name">${cl.nom}</div><div class="cr-sector">${cl.secteur} · ${CLIENT_DATA[cl.id].sites.length} site(s)</div></div>
+            <div class="cr-actions">
+              <button class="btn ghost sm" onclick="openClientSites('${cl.id}')">Gérer les sites</button>
+              <button class="icon-btn" title="Supprimer le client" onclick="deleteClientAdmin('${cl.id}')">🗑</button>
+            </div>
+          </div>`).join("")}
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h3>Nouveau client</h3></div>
+      <div class="panel-body pad">
+        <div class="new-form-grid">
+          <input type="text" id="newClientNom" placeholder="Nom du client">
+          <input type="text" id="newClientSecteur" placeholder="Secteur (ex: ONG - Éducation)">
+          <input type="text" id="newClientInitials" placeholder="Initiales (2-3 lettres)" maxlength="3">
+          <select id="newClientAccent">
+            <option value="var(--rust)">Accent rouille</option>
+            <option value="var(--verdigris)">Accent vert</option>
+            <option value="var(--amber)">Accent ambre</option>
+          </select>
+        </div>
+        <button class="btn rust sm" style="margin-top:12px;" onclick="submitNewClient()">+ Créer le client</button>
+      </div>
+    </div>`;
+}
+
+function renderClientSitesAdmin(clientId){
+  const cl = CLIENTS.find(x=>x.id===clientId);
+  const sites = CLIENT_DATA[clientId].sites;
+  const indexed = sites.map((s,idx)=>({s,idx}));
+  const pageItems = paginate(indexed, "pgAdminSites");
+  const techs = USERS.filter(u=>u.role==="tech").map(u=>u.nom);
+  const nonAssignes = sites.filter(s=>!s.technicien).length;
+  return `
+    <div class="hint" style="margin-top:0;">
+      Les écoles/sites sont créés et renommés par le client lui-même depuis son espace.
+      Ici, l'exploitation ne fait qu'<b>affecter un technicien</b> à chaque site.
+      ${nonAssignes>0 ? `<span style="color:var(--rust-dark); font-weight:600;"> ${nonAssignes} site(s) sans technicien assigné.</span>` : ''}
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <h3>Sites - ${cl.nom}</h3>
+        <button class="btn ghost sm" onclick="backToClients()">← Retour aux clients</button>
+      </div>
+      <div class="panel-body">
+        ${sites.length===0? `<div class="empty" style="padding:24px;">Ce client n'a pas encore créé de site.</div>` : pageItems.map(({s,idx})=>`
+          <div class="user-row">
+            <div class="ur-name" style="min-width:170px;">${s.nom}</div>
+            <div class="ur-email" style="min-width:auto;">${s.eleves} élèves</div>
+            <select onchange="updateSiteAdmin('${clientId}',${idx},'technicien',this.value)">
+              <option value="" ${!s.technicien?'selected':''}>- Non assigné -</option>
+              ${techs.map(t=>`<option value="${t}" ${s.technicien===t?'selected':''}>${t}</option>`).join("")}
+            </select>
+            ${!s.technicien?`<span class="badge action">à assigner</span>`:''}
+          </div>`).join("")}
+      </div>${renderPager("pgAdminSites", sites)}
+    </div>`;
+}
+
+function renderUsersAdmin(){
+  const pageItems = paginate(USERS, "pgAdminUsers");
+  return `
+    <div class="panel" style="margin-bottom:16px;">
+      <div class="panel-body">
+        ${pageItems.map(u=>`
+          <div class="user-row">
+            <div class="ur-name">${u.nom}</div>
+            <div class="ur-email">${u.email}</div>
+            <select onchange="updateUserAdmin('${u.email}','role',this.value)">
+              <option value="tech" ${u.role==='tech'?'selected':''}>Technicien</option>
+              <option value="exploit" ${u.role==='exploit'?'selected':''}>Exploitation</option>
+              <option value="ong" ${u.role==='ong'?'selected':''}>Client / ONG</option>
+            </select>
+            ${u.role==='ong' ? `<select onchange="updateUserAdmin('${u.email}','clientId',this.value)">
+              ${CLIENTS.map(cl=>`<option value="${cl.id}" ${u.clientId===cl.id?'selected':''}>${cl.nom}</option>`).join("")}
+            </select>` : ''}
+            <div class="ur-actions"><button class="icon-btn" title="Supprimer l'utilisateur" onclick="deleteUserAdmin('${u.email}')">🗑</button></div>
+          </div>`).join("")}
+      </div>${renderPager("pgAdminUsers", USERS)}
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h3>Nouvel utilisateur</h3></div>
+      <div class="panel-body pad">
+        <div class="new-form-grid">
+          <input type="text" id="newUserNom" placeholder="Nom complet">
+          <input type="text" id="newUserEmail" placeholder="Adresse e-mail">
+          <select id="newUserRole" onchange="toggleNewUserClient()">
+            <option value="tech">Technicien</option>
+            <option value="exploit">Exploitation</option>
+            <option value="ong">Client / ONG</option>
+          </select>
+          <select id="newUserClient" style="display:none;">${CLIENTS.map(cl=>`<option value="${cl.id}">${cl.nom}</option>`).join("")}</select>
+        </div>
+        <div class="hint" style="margin-bottom:0;">Mot de passe de démonstration attribué automatiquement : <code>demo</code></div>
+        <button class="btn rust sm" style="margin-top:10px;" onclick="submitNewUser()">+ Créer l'utilisateur</button>
+      </div>
+    </div>`;
+}
+function toggleNewUserClient(){
+  const role = document.getElementById("newUserRole").value;
+  document.getElementById("newUserClient").style.display = role==="ong" ? "" : "none";
+}
+function bindUsersAdminForm(){ /* rien à lier au-delà des onchange inline */ }
+function bindClientSitesForm(){ /* rien à lier au-delà des onchange inline */ }
+
+// --- Clients ---
+function submitNewClient(){
+  const nom = document.getElementById("newClientNom").value.trim();
+  const secteur = document.getElementById("newClientSecteur").value.trim() || "Client IGEPRO";
+  const initials = (document.getElementById("newClientInitials").value.trim() || nom.slice(0,2)).toUpperCase();
+  const accent = document.getElementById("newClientAccent").value;
+  if(!nom) return;
+  const id = nom.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"") || ("client-"+(CLIENTS.length+1));
+  CLIENTS.push({id, nom, secteur, initials, accent});
+  CLIENT_DATA[id] = {sites:[], visites:[], history:[], activity:[]};
+  render();
+}
+function deleteClientAdmin(clientId){
+  if(USERS.some(u=>u.role==="ong" && u.clientId===clientId)){
+    alert("Ce client a un compte utilisateur rattaché. Supprimez ou réaffectez d'abord cet utilisateur.");
+    return;
+  }
+  if(ACTIVE_CLIENT===clientId){ alert("Vous consultez actuellement ce client. Changez de client actif avant de le supprimer."); return; }
+  if(!confirm("Supprimer définitivement ce client et toutes ses données ?")) return;
+  CLIENTS = CLIENTS.filter(cl=>cl.id!==clientId);
+  delete CLIENT_DATA[clientId];
+  render();
+}
+
+// --- Sites (par client) ---
+// Côté exploitation : uniquement l'affectation d'un technicien à un site existant.
+// La création/édition/suppression des sites appartient au client (voir espace ONG).
+function updateSiteAdmin(clientId, idx, field, value){
+  const site = CLIENT_DATA[clientId].sites[idx];
+  site[field] = value;
+  if(clientId===ACTIVE_CLIENT) loadClientData(ACTIVE_CLIENT);
+  render();
+}
+
+// --- Utilisateurs ---
+function submitNewUser(){
+  const nom = document.getElementById("newUserNom").value.trim();
+  const email = document.getElementById("newUserEmail").value.trim().toLowerCase();
+  const role = document.getElementById("newUserRole").value;
+  const clientSel = document.getElementById("newUserClient").value;
+  if(!nom || !email) return;
+  if(USERS.some(u=>u.email===email)){ alert("Un utilisateur existe déjà avec cet e-mail."); return; }
+  const fonctionMap = {tech:"Technicien terrain", exploit:"Responsable exploitation", ong:"Client / ONG"};
+  const user = {email, password:"demo", role, nom, fonction:fonctionMap[role]};
+  if(role==="ong") user.clientId = clientSel;
+  USERS.push(user);
+  render();
+}
+function updateUserAdmin(email, field, value){
+  const u = USERS.find(x=>x.email===email);
+  u[field] = value;
+  if(field==="role" && value!=="ong") delete u.clientId;
+  if(field==="role" && value==="ong" && !u.clientId) u.clientId = CLIENTS[0].id;
+  render();
+}
+function deleteUserAdmin(email){
+  if(CURRENT_USER && CURRENT_USER.email===email){ alert("Vous ne pouvez pas supprimer votre propre compte connecté."); return; }
+  if(!confirm("Supprimer cet utilisateur ?")) return;
+  USERS = USERS.filter(u=>u.email!==email);
+  render();
+}
+
+/* ---------- ONG : tableau de bord ---------- */
+/* ---------- ONG : historique des visites validées (comptes-rendus) ---------- */
+function renderOngHistorique(c, top){
+  const validees = VISITES.filter(v=>v.statut==="validee").sort((a,b)=>b.date.localeCompare(a.date));
+  const siteFilter = STATE.histSite || "all";
+  const filtered = siteFilter==="all" ? validees : validees.filter(v=>v.site===siteFilter);
+  const pageItems = paginate(filtered, "pgHistOng");
+
+  top.innerHTML = `<span class="hint" style="margin:0;">${filtered.length} compte(s)-rendu(s) validé(s)</span>`;
+  c.innerHTML = `
+    <div class="hint" style="margin-top:0;">Historique de tous les comptes-rendus de visite déjà contrôlés et validés par l'exploitation, toutes écoles confondues.</div>
+    <div class="panel">
+      <div class="panel-head">
+        <h3>Comptes-rendus validés</h3>
+        <select onchange="STATE.histSite=this.value; STATE.pgHistOng=1; render();">
+          <option value="all">Toutes les écoles</option>
+          ${SITE_NAMES.map(s=>`<option value="${s}" ${siteFilter===s?'selected':''}>${s}</option>`).join("")}
+        </select>
+      </div>
+      <div class="panel-body"><table>
+        <thead><tr><th>École</th><th>Date</th><th>Technicien</th><th>Actions</th><th>Curatif (MC)</th><th></th></tr></thead>
+        <tbody>
+        ${pageItems.length===0? `<tr><td colspan="6" style="color:var(--slate-light); text-align:center; padding:24px;">Aucun compte-rendu validé pour l'instant.</td></tr>` :
+          pageItems.map(v=>`
+          <tr class="clickable" onclick="openVisite('${v.id}')">
+            <td><b>${v.site}</b></td><td class="mono">${fmtDate(v.date)}</td><td>${v.technicien}</td>
+            <td class="mono">${countPreventifActions(v)}</td><td class="mono">${countCuratifActions(v)}</td>
+            <td style="text-align:right; color:var(--slate-light);">→</td>
+          </tr>`).join("")}
+        </tbody>
+      </table>${renderPager("pgHistOng", filtered)}</div>
+    </div>`;
+}
+
+function renderOngDashboard(c, top){
+  const attente = countDevisAttenteMontantOng();
+  const totalAnnee = totalDevisValideAnnee();
+  const allLast = SITES.map(s=>lastValidatedVisiteForSite(s.nom)).filter(Boolean);
+  const actionsOuvertes = allLast.reduce((s,v)=>s+v.action+v.encours+v.asurv,0);
+  c.innerHTML = `
+    <div class="hint" style="margin-top:0;">Cet espace affiche uniquement les visites déjà contrôlées et validées par l'exploitation IGEPRO. Une visite tout juste soumise par le technicien n'apparaît ici qu'après cette validation.</div>
+    <div class="grid kpis">
+      <div class="card kpi-card ink"><div class="l">Écoles suivies</div><div class="n">${SITES.length}</div></div>
+      <div class="card kpi-card verdigris"><div class="l">Budget validé (année)</div><div class="n" style="font-size:20px;">${fmtFCFA(totalAnnee)}</div></div>
+      <div class="card kpi-card amber"><div class="l">Devis en attente</div><div class="n" style="font-size:20px;">${fmtFCFA(attente.montant)}</div><div class="d">${attente.n} à arbitrer</div></div>
+      <div class="card kpi-card rust"><div class="l">Actions en cours</div><div class="n">${actionsOuvertes}</div><div class="d">tous sites</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h3>État général des écoles</h3></div>
+      <div class="panel-body"><table>
+        <thead><tr><th>École</th><th>Dernière visite validée</th><th>État</th></tr></thead>
+        <tbody>${SITES.map(s=>{
+          const v=lastValidatedVisiteForSite(s.nom); const score=healthScore(v); const hl=healthLabel(score);
+          return `<tr><td><b>${s.nom}</b></td><td class="mono">${v?fmtDate(v.date):'-'}</td>
+          <td><span class="badge ${hl.cls}">${hl.txt}${score!==null?' · '+score+'%':''}</span></td></tr>`;
+        }).join("")}</tbody>
+      </table></div>
+    </div>`;
+}
+
+/* ---------- ONG : devis à valider ---------- */
+function renderOngDevis(c, top){
+  const rows=[];
+  VISITES.filter(v=>v.statut==="validee").forEach(v=>{
+    v.constats.forEach(x=>{ if(x.devis==="Attente validation") rows.push({v, x, type:"preventif"}); });
+    v.curatif.forEach(x=>{ if(x.devis==="Attente validation") rows.push({v, x, type:"curatif"}); });
+  });
+  if(rows.length===0){ c.innerHTML = `<div class="panel"><div class="empty"><div class="big">Aucun devis en attente</div>Tous les devis contrôlés par l'exploitation et soumis à validation ont été traités.</div></div>`; return; }
+  c.innerHTML = `<div class="hint" style="margin-top:0;">Seuls les devis issus de visites déjà validées par l'exploitation vous sont soumis.</div>
+  <div class="panel"><div class="panel-body"><table>
+    <thead><tr><th>École</th><th>Intervention</th><th>Type</th><th>Montant</th><th>Devis</th><th></th></tr></thead>
+    <tbody>${rows.map(({v,x,type})=>`
+      <tr><td><b>${v.site}</b></td><td style="max-width:280px;">${x.texte || x.remarque}</td>
+      <td>${type==='curatif'?'<span class="badge action">MC - Curatif</span>':'<span class="badge ras">Préventif</span>'}</td>
+      <td class="mono">${x.montant?fmtFCFA(x.montant):'-'}</td><td><span class="badge encours">${x.devis}</span></td>
+      <td style="text-align:right; white-space:nowrap;">
+        <button class="btn verdigris sm" onclick="decideDevis('${x.id}','Validé')">Valider</button>
+        <button class="btn ghost sm" onclick="decideDevis('${x.id}','Pas fait')">Refuser</button>
+      </td></tr>`).join("")}</tbody>
+  </table></div></div>`;
+}
+
+/* ---------- ONG : détail d'une visite validée (lecture seule) ---------- */
+function renderOngVisiteDetail(c, top){
+  const v = VISITES.find(v=>v.id===STATE.activeVisiteId);
+  if(!v || v.statut!=="validee"){
+    c.innerHTML = `<div class="panel"><div class="empty"><div class="big">Visite non disponible</div>Cette visite n'a pas encore été validée par l'exploitation.</div></div>`;
+    return;
+  }
+  top.innerHTML = `<button class="btn ghost sm" onclick="goto('ong-sites')">← Retour</button>`;
+  renderCarnet(c, v, false);
+  const thread=document.createElement("div"); thread.style.maxWidth="760px";
+  thread.innerHTML = renderThreadPanel(v, false);
+  c.appendChild(thread); bindThreadForm(v);
+}
+function decideDevis(id, decision){ findConstat(id).devis = decision; render(); }
+
+/* ---------- ONG : gestion de ses propres sites/écoles ---------- */
+function renderOngGestionSites(c, top){
+  const indexed = SITES.map((s,idx)=>({s,idx}));
+  const pageItems = paginate(indexed, "pgOngSites");
+  c.innerHTML = `
+    <div class="hint" style="margin-top:0;">
+      Vous créez et nommez vos écoles ici. IGEPRO se charge ensuite d'y affecter un technicien de maintenance.
+    </div>
+    <div class="panel" style="margin-bottom:16px;">
+      <div class="panel-head"><h3>Mes écoles</h3></div>
+      <div class="panel-body">
+        ${SITES.length===0? `<div class="empty" style="padding:24px;">Aucune école créée pour l'instant.</div>` : pageItems.map(({s,idx})=>`
+          <div class="user-row">
+            <input type="text" value="${s.nom}" style="min-width:180px;" onchange="ongUpdateSite(${idx},'nom',this.value)">
+            <input type="number" value="${s.eleves}" style="width:110px;" title="Effectif élèves" onchange="ongUpdateSite(${idx},'eleves',this.value)">
+            ${s.technicien
+              ? `<span class="badge bon">Technicien : ${s.technicien}</span>`
+              : `<span class="badge vigilance">Technicien non encore assigné</span>`}
+            <div class="ur-actions"><button class="icon-btn" title="Supprimer l'école" onclick="ongDeleteSite(${idx})">🗑</button></div>
+          </div>`).join("")}
+      </div>${renderPager("pgOngSites", SITES)}
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h3>Ajouter une école</h3></div>
+      <div class="panel-body pad">
+        <div class="new-form-grid">
+          <input type="text" id="ongNewSiteNom" placeholder="Nom de l'école">
+          <input type="number" id="ongNewSiteEleves" placeholder="Effectif élèves">
+        </div>
+        <div class="hint" style="margin-bottom:0;">L'affectation du technicien se fait ensuite côté IGEPRO.</div>
+        <button class="btn rust sm" style="margin-top:10px;" onclick="ongSubmitNewSite()">+ Ajouter l'école</button>
+      </div>
+    </div>`;
+}
+function ongUpdateSite(idx, field, value){
+  const site = CLIENT_DATA[ACTIVE_CLIENT].sites[idx];
+  site[field] = field==="eleves" ? (parseInt(value,10)||0) : value;
+  loadClientData(ACTIVE_CLIENT);
+  render();
+}
+function ongDeleteSite(idx){
+  if(!confirm("Supprimer cette école ? Son historique de visites resterait consultable séparément.")) return;
+  CLIENT_DATA[ACTIVE_CLIENT].sites.splice(idx,1);
+  loadClientData(ACTIVE_CLIENT);
+  render();
+}
+function ongSubmitNewSite(){
+  const nom = document.getElementById("ongNewSiteNom").value.trim();
+  const eleves = parseInt(document.getElementById("ongNewSiteEleves").value,10) || 0;
+  if(!nom) return;
+  CLIENT_DATA[ACTIVE_CLIENT].sites.push({nom, eleves, technicien:""});
+  loadClientData(ACTIVE_CLIENT);
+  render();
+}
+
+/* ---------- RAPPORT ---------- */
+function renderReport(c, top){
+  const v = VISITES.find(v=>v.id===STATE.reportVisiteId);
+  top.innerHTML = `<button class="btn ghost sm" onclick="window.print()">🖨 Imprimer / exporter en PDF</button>`;
+  c.innerHTML = `
+    <div class="top-actions">
+      <select class="report-picker" onchange="STATE.reportVisiteId=this.value; render();">
+        ${VISITES.filter(v=>v.statut==="validee").map(v=>`<option value="${v.id}" ${v.id===STATE.reportVisiteId?'selected':''}>${v.site} - ${fmtDate(v.date)}</option>`).join("")}
+      </select>
+      <span style="font-size:11.5px; color:var(--slate);">Généré automatiquement à partir des données validées - mise en page identique au rapport Excel historique</span>
+    </div>
+    <div class="report-page">
+      <h2>PROJET : Maintenance préventive et curative des Écoles SPAC</h2>
+      <div class="report-meta">Date : ${fmtDate(v.date)} &nbsp;·&nbsp; École : ${v.site} &nbsp;·&nbsp; Technicien : ${v.technicien}</div>
+      <div class="report-section-title">MAINTENANCE PRÉVENTIVE</div>
+      <table class="report-table">
+        <thead><tr><th style="width:42%;">Items</th><th>Suivi</th><th>Prochaine échéance</th><th>Remarque</th><th>Devis</th></tr></thead>
+        <tbody>${CATEGORIES.map(cat=>`
+          <tr class="cat-row"><td colspan="5">${cat.id} - ${cat.nom} (Fréquence ${cat.freq.toLowerCase()})</td></tr>
+          ${v.constats.filter(x=>x.catId===cat.id).map(x=>`
+            <tr><td>${x.texte}</td><td>${x.statut||'-'}</td><td>${x.echeance||'-'}</td><td>${x.remarque||''}</td><td>${x.devis||'-'}</td></tr>
+          `).join("")}`).join("")}</tbody>
+      </table>
+      <div class="report-section-title">MAINTENANCE CURATIVE</div>
+      <table class="report-table">
+        <thead><tr><th style="width:42%;">Items</th><th>Suivi</th><th>Prochaine échéance</th><th>Remarque</th><th>Devis</th></tr></thead>
+        <tbody>${v.curatif.length? v.curatif.map(x=>`
+          <tr><td>${x.texte}</td><td>${x.statut}</td><td>${x.echeance||'NA'}</td><td>${x.remarque||'Cf colonne A'}</td><td>${x.devis}${x.montant?' ('+fmtFCFA(x.montant)+')':''}</td></tr>
+        `).join("") : `<tr><td colspan="5" style="color:var(--slate-light);">Aucune intervention curative pour cette visite.</td></tr>`}</tbody>
+      </table>
+      <div class="report-section-title">PHOTOS</div>
+      <div style="font-size:11.5px; color:var(--slate);">
+        ${v.constats.reduce((s,x)=>s+photoCount(x),0) + v.curatif.reduce((s,x)=>s+photoCount(x),0)} photo(s) jointe(s) au dossier de visite - consultables dans la bibliothèque IGEPRO liée à ce rapport.
+      </div>
+    </div>`;
+}
+
+/* =========================================================
+   INIT
+   ========================================================= */
+/* =========================================================
+   CONNEXION / DÉCONNEXION
+   ========================================================= */
+function login(email, password){
+  const errBox = document.getElementById("loginError");
+  const user = USERS.find(u=>u.email.toLowerCase()===String(email).toLowerCase().trim() && u.password===password);
+  if(!user){ errBox.textContent = "E-mail ou mot de passe incorrect."; return; }
+  errBox.textContent = "";
+  CURRENT_USER = user;
+  STATE.role = user.role;
+  document.getElementById("loginScreen").style.display = "none";
+
+  if(user.role === "ong"){
+    // Le client ONG se connecte directement dans son propre espace, sans écran de choix.
+    loadClientData(user.clientId);
+    enterApp();
+  } else {
+    // Technicien / exploitation : IGEPRO travaille pour plusieurs clients → on choisit d'abord le client actif.
+    showClientSelect();
+  }
+}
+function enterApp(){
+  STATE.screen = ROLE_DEFAULT_SCREEN[CURRENT_USER.role];
+  document.getElementById("clientSelectScreen").style.display = "none";
+  document.getElementById("appShell").style.display = "flex";
+  render();
+}
+function showClientSelect(){
+  document.getElementById("appShell").style.display = "none";
+  document.getElementById("clientSelectScreen").style.display = "block";
+  document.getElementById("csUserName").textContent = `${CURRENT_USER.nom} · ${ROLE_LABEL[CURRENT_USER.role]}`;
+  const grid = document.getElementById("clientCards");
+  grid.innerHTML = CLIENTS.map(cl=>`
+    <div class="client-card" data-client="${cl.id}">
+      <div class="cc-top">
+        <div class="cc-mark" style="background:${cl.accent}">${cl.initials}</div>
+        <div><div class="cc-name">${cl.nom}</div><div class="cc-sector">${cl.secteur}</div></div>
+      </div>
+      <div class="site-meta" style="margin:0;">${CLIENT_DATA[cl.id].sites.length} site(s) suivis</div>
+      <div class="cc-open">Ouvrir l'espace →</div>
+    </div>`).join("");
+  grid.querySelectorAll(".client-card").forEach(card=>{
+    card.onclick = ()=>{ loadClientData(card.dataset.client); enterApp(); };
+  });
+}
+function logout(){
+  CURRENT_USER = null; ACTIVE_CLIENT = null;
+  document.getElementById("loginForm").reset();
+  document.getElementById("loginError").textContent = "";
+  document.getElementById("appShell").style.display = "none";
+  document.getElementById("clientSelectScreen").style.display = "none";
+  document.getElementById("loginScreen").style.display = "flex";
+  closeRail();
+  saveAll(); // efface la session en cache (les données métier, elles, restent)
+}
+
+document.getElementById("loginForm").addEventListener("submit", e=>{
+  e.preventDefault();
+  login(document.getElementById("loginEmail").value, document.getElementById("loginPassword").value);
+});
+document.getElementById("csLogoutBtn").addEventListener("click", logout);
+document.querySelectorAll(".demo-chip").forEach(chip=>{
+  chip.addEventListener("click", ()=>{
+    const d = DEMO_FILL[chip.dataset.demo];
+    document.getElementById("loginEmail").value = d.email;
+    document.getElementById("loginPassword").value = d.password;
+    login(d.email, d.password);
+  });
+});
+
+function openRail(){ document.getElementById("rail").classList.add("open"); document.getElementById("railOverlay").classList.add("open"); }
+function closeRail(){ document.getElementById("rail").classList.remove("open"); document.getElementById("railOverlay").classList.remove("open"); }
+document.getElementById("menuToggle").addEventListener("click", openRail);
+document.getElementById("railOverlay").addEventListener("click", closeRail);
+
+/* =========================================================
+   BOOTSTRAP - charge le cache puis restaure la session en cours,
+   sans quoi affiche l'écran de connexion normalement.
+   ========================================================= */
+(async function bootstrap(){
+  await loadPersistedData();
+
+  const session = CURRENT_SESSION;
+  const user = session ? USERS.find(u=>u.email===session.email) : null;
+
+  if(user){
+    CURRENT_USER = user;
+    STATE.role = user.role;
+    if(user.role==="ong"){
+      loadClientData(user.clientId);
+    } else if(session.activeClient && CLIENT_DATA[session.activeClient]){
+      loadClientData(session.activeClient);
+    }
+    if(ACTIVE_CLIENT){
+      STATE.screen = (session.screen && NAV[user.role].concat(NAV.common).map(i=>i.id).includes(session.screen)) ? session.screen : ROLE_DEFAULT_SCREEN[user.role];
+      document.getElementById("loginScreen").style.display = "none";
+      document.getElementById("clientSelectScreen").style.display = "none";
+      document.getElementById("appShell").style.display = "flex";
+      render();
+    } else {
+      // technicien/exploitation reconnecté mais sans client actif enregistré → repasser par le choix du client
+      document.getElementById("loginScreen").style.display = "none";
+      showClientSelect();
+    }
+  } else {
+    document.getElementById("loginLoading").style.display = "none";
+    document.getElementById("loginForm").style.display = "";
+    document.getElementById("loginDemo").style.display = "";
+  }
+})();
+
+</script>
+</body>
+</html>
